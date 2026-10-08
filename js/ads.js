@@ -19,7 +19,7 @@ const production = !!cfg.production;
 // Google が用意しているテスト用の広告ユニット（開発中はこちらを使う）
 const TEST = { banner: 'ca-app-pub-3940256099942544/2435281174', interstitial: 'ca-app-pub-3940256099942544/4411468910' };
 // 本物の広告ユニット（ストアに出すビルドだけで使う）。AdMob でこのアプリ用に作った ID を入れる
-const REAL = { banner: 'ca-app-pub-7017663942238206/TODO', interstitial: 'ca-app-pub-7017663942238206/TODO' };
+const REAL = { banner: 'ca-app-pub-7017663942238206/6874372362', interstitial: 'ca-app-pub-7017663942238206/4248209025' };
 const ids = production ? REAL : TEST;
 const CONFIG_URL = 'https://maosun-dev.github.io/pachi-shushi/ad-config.json';
 const DEFAULT_EVERY = 3;
