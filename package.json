@@ -2,7 +2,7 @@
   "name": "pachi-shushi",
   "version": "1.0.0",
   "private": true,
-  "description": "パチスロ収支 - パチンコ・スロットの収支記録",
+  "description": "ワンタップ収支 - パチンコ・パチスロ記録",
   "scripts": {
     "build": "node tools/app/build-www.mjs",
     "sync": "npm run build && npx cap sync ios"

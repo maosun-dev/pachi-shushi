@@ -1,6 +1,11 @@
-# パチスロ収支：iPhoneアプリ化メモ
+# ワンタップ収支：iPhoneアプリ化メモ
 
 転落牌（`../tenrakuhai`）と同じ作り方：Capacitor で包む → AdMob → GitHub Actions の Mac で組み立てて TestFlight へ。
+
+## 名前
+- App Store に載せる名前：**ワンタップ収支 - パチンコ・パチスロ記録**（App Store Connect で入力する）
+- ホーム画面の名前：**ワンタップ収支**（`capacitor.config.json` と `ios/App/App/Info.plist` の CFBundleDisplayName）
+- リポジトリ名・バンドルID（`io.github.maosundev.pachishushi`）は利用者に見えないので旧名のまま
 
 ## できていること
 - `pachi-shushi.html` はWeb版のまま（見た目・操作・データ構造は変えていない）。変えたのは2行だけ
