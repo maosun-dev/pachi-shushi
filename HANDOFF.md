@@ -25,16 +25,18 @@
 - `.github/workflows/ios-testflight.yml`：転落牌と同じ（Game Center の署名だけ削除）。
 - `privacy.html`：プライバシーポリシー。
 
-## 残っている作業（あなたがやること）
-1. ~~AdMob~~ 済み：アプリID `ca-app-pub-7017663942238206~3268888010`、バナー `/6874372362`、インタースティシャル `/4248209025`（コードに反映済み）。App Store に公開したら AdMob の「ストアを追加」でリンクする（審査が通るまで広告配信は制限される）。
-   - アプリID → `ios/App/App/Info.plist` の `GADApplicationIdentifier`（今はGoogleのテスト用ID）
-   - 広告ユニットID → `js/ads.js` の `REAL.banner` と `REAL.interstitial`（今は `TODO`）
-   - どちらかが未設定のまま「本物の広告」でビルドすると止まるようにしてある。
-2. **GitHub** に新しいリポジトリを作って push（例：`maosun-dev/pachi-shushi`）。
-3. リポジトリの Secrets に転落牌と同じ4つを登録：`APPLE_TEAM_ID` `APPSTORE_API_KEY_ID` `APPSTORE_API_ISSUER_ID` `APPSTORE_API_PRIVATE_KEY`（鍵は転落牌と同じものを使える）。
-4. **App Store Connect** で新しいアプリを作る。バンドルID：`io.github.maosundev.pachishushi`
-5. Actions →「iPhone版をTestFlightへ」→ Run workflow（最初は「本物の広告」オフ）→ TestFlight で実機確認。
-6. GitHub Pages を有効にして `privacy.html` と `ad-config.json` を公開（`https://maosun-dev.github.io/pachi-shushi/` の想定。リポジトリ名を変えるなら `js/ads.js` の `CONFIG_URL` も）。privacy.html のURLを App Store Connect に登録。
+## 済んだこと（2026-10-08）
+- GitHub：https://github.com/maosun-dev/pachi-shushi（公開）。Secrets 4つ登録済み（鍵は転落牌と同じチームキー）
+- GitHub Pages：https://maosun-dev.github.io/pachi-shushi/privacy.html と ad-config.json
+- Apple：App ID `io.github.maosundev.pachishushi` 登録、App Store Connect にアプリ作成（SKU `pachishushi`）
+- AdMob：アプリID `ca-app-pub-7017663942238206~3268888010`、バナー `/6874372362`、インタースティシャル `/4248209025`（コードに反映済み）
+
+## 残っている作業
+1. TestFlight で実機確認（Actions →「iPhone版をTestFlightへ」、「本物の広告」オフ）
+2. 本番用アイコン（`tools/app/ios-icon-1024.png` に置いて `make-ios-assets.ps1`）
+3. App Store Connect：説明文・スクリーンショット・年齢制限・Appのプライバシー・プライバシーポリシーURL
+4. 「本物の広告」オンでビルド → 審査に提出
+5. 公開後、AdMob の「ストアを追加」でリンク（審査が通るまで広告配信は制限される）
 
 ## 実機で確かめること
 - 記録・メモ・修正・削除、アプリを終了して開き直しても残るか
