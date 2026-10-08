@@ -1,0 +1,9 @@
+{
+  "appId": "io.github.maosundev.pachishushi",
+  "appName": "パチスロ収支",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#FFFFFF"
+  }
+}

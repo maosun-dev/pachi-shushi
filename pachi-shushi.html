@@ -511,7 +511,7 @@ let assets=null, cur=null, memoTimer=null, viewing=null;
 const urlCache={};
 const mediaOf=e=>(e.media||[]).concat((e.imgs||[]).map(id=>({id,k:"i"})));
 function normEntry(e){if(e.imgs){e.media=mediaOf(e);delete e.imgs}return e}
-const srcOf=id=>urlCache[id]||("/_blob/"+id);
+const srcOf=id=>urlCache[id]||(assets&&assets.src?assets.src(id):"/_blob/"+id);
 const findEntry=t=>state.entries.find(x=>x.t===t);
 function touch(e){e.u=Date.now()}
 function openDetail(t){cur=t;closeEdit();renderD();show("sheetD")}
@@ -609,7 +609,7 @@ async function uploadOne(f){
   let blob=f,type;
   if(isVideo){type=/webm/i.test(f.type)?"video/webm":"video/mp4"}
   else{try{blob=await shrink(f);type="image/jpeg"}catch(_){type=f.type||"image/jpeg"}}
-  if(blob.size>20*1024*1024)throw {code:"too_large"};
+  if(blob.size>(assets.maxBytes||20*1024*1024))throw {code:"too_large"};
   let r;
   try{r=await assets.upload(blob,{type})}
   catch(err){if(err&&err.code==="store_unavailable"){await new Promise(z=>setTimeout(z,800));r=await assets.upload(blob,{type})}else throw err}
@@ -632,6 +632,7 @@ $("imgFile").onchange=async ev=>{
     }
   }
   $("imgState").textContent=ok?ok+"件 追加しました":"";
+  if(ok&&window.Ads)Ads.afterAttach();
 };
 function openViewer(item){
   viewing=item;const box=$("vBox");box.innerHTML="";

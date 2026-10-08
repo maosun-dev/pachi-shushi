@@ -1,0 +1,6 @@
+# アプリ用（npm install / npm run build で作り直せる）
+node_modules/
+www/
+
+# App Store Connect の鍵（絶対に上げない）
+*.p8
