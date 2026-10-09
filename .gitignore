@@ -4,3 +4,7 @@ www/
 
 # App Store Connect の鍵（絶対に上げない）
 *.p8
+
+# 見本・手元確認用
+mockups/
+.claude/

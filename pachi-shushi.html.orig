@@ -92,7 +92,7 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
 .sheet{position:fixed;left:0;right:0;top:0;bottom:calc(var(--adh) + env(safe-area-inset-bottom,0px));background:var(--bg);overflow-y:auto;
   padding-top:env(safe-area-inset-top,0px);transform:translateX(100%);transition:transform .25s ease;visibility:hidden}
 .sheet.on{transform:none;visibility:visible}
-#sheetA{z-index:10}#sheetM,#sheetG{z-index:11}#sheetL{z-index:12}#sheetD{z-index:13}
+#sheetA{z-index:10}#sheetM{z-index:11}#sheetL{z-index:12}#sheetD{z-index:13}
 .tags{display:inline-flex;gap:6px;margin-left:6px}
 .tags span{font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:10px;padding:0 7px;line-height:18px}
 .dsec{margin-top:22px}
@@ -186,65 +186,6 @@ button.row:disabled{cursor:default}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-
-/* ===== redesign mockup ===== */
-/* year detail: three ways to break the year down */
-.views{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:2px 0 12px}
-.views .monthbtn{margin:0;padding:8px 0;width:100%}
-/* store / machine on a record: optional, filled after recording */
-.tagf+.tagf{margin-top:14px}
-.tagf input{font-size:16px}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.chips button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:15px;padding:5px 12px;
-  font:400 13px "Noto Sans JP",sans-serif;cursor:pointer}
-.row .where{color:var(--sub);font-size:12px;margin-left:6px}
-/* tags: made by the user, any number per record */
-.mytags{display:flex;flex-wrap:wrap;gap:6px}
-.mytags .on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.mytags .on::after{content:"×";margin-left:6px;opacity:.6}
-.newtag{display:flex;gap:8px;margin-top:10px}
-.newtag input{flex:1;font-size:15px}
-.newtag button{flex:none;border:1px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:15px;padding:5px 14px;
-  font:500 13px "Noto Sans JP",sans-serif;cursor:pointer}
-.newtag button:disabled{opacity:.3;cursor:default}
-.tagnote{font-size:12px;color:var(--sub);margin-top:8px}
-.grow{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.grow .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.grow{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.gnote{font-size:12px;color:var(--sub);text-align:center;margin-top:18px}
-.add:disabled{opacity:.25;cursor:default}
-.unset .nm{color:var(--sub)}
-/* hero: the year total, then what it is made of */
-.hero{padding:4px 0 6px}
-.mstat{font-size:12px;color:var(--sub);text-align:center;margin-top:2px;font-variant-numeric:tabular-nums}
-.mstat b{font-weight:700}
-.spark{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;height:56px;margin:16px auto 6px;max-width:300px;position:relative}
-.spark::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
-.spark i{position:relative;display:block}
-.spark i span{position:absolute;left:0;right:0;border-radius:2px}
-.spark i.p span{bottom:50%;background:var(--plus)}
-.spark i.n span{top:50%;background:var(--minus)}
-.hint{margin-top:8px}
-
-/* amounts: grouped digits, the same Mincho numerals as the total */
-.fields{grid-template-columns:1fr 1fr auto;align-items:end}
-.fields input:not([type=date]){font:800 24px "Shippori Mincho","Yu Mincho",serif;padding:4px 1px 6px;letter-spacing:.01em}
-.fields input::placeholder{color:var(--line)}
-
-/* date: almost always today, so a small chip that opens the same picker */
-.datechip{position:relative;display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border:1px solid var(--line);border-radius:19px;
-  font:500 14px "Noto Sans JP",sans-serif;color:var(--ink);white-space:nowrap;margin-bottom:2px}
-.datechip input{position:absolute;inset:0;opacity:0;width:100%;height:100%;border:0;padding:0;cursor:pointer}
-.datechip.past{border-color:var(--ink)}
-
-/* the record button previews the result: green for a win, red for a loss */
-.add{height:58px;border-radius:10px;font-size:16px;font-weight:700;transition:background .18s,border-color .18s}
-.add.win{background:var(--plus);border-color:var(--plus);color:var(--bg)}
-.add.lose{background:var(--minus);border-color:var(--minus);color:var(--bg)}
-.total.bump{animation:bump .5s ease}
-@keyframes bump{40%{transform:scale(1.04)}}
-@media (prefers-reduced-motion:reduce){.total.bump{animation:none}}
-
 </style>
 </head>
 <body>
@@ -259,8 +200,6 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
     <button class="totalbtn" id="openSum" aria-label="詳細を見る">
       <div class="ylabel" id="yLabel">2026年の収支</div>
       <div class="total" id="total">±0円</div>
-      <div class="mstat" id="mstat"></div>
-      <div class="spark" id="spark" aria-hidden="true"></div>
       <div class="hint">詳細 ›</div>
     </button>
   </div>
@@ -274,7 +213,7 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
     <div class="fields">
       <div><label for="inv">投資</label><input id="inv" inputmode="numeric" placeholder="0"></div>
       <div><label for="ret">回収</label><input id="ret" inputmode="numeric" placeholder="0"></div>
-      <div><label for="date">日付</label><span class="datechip" id="dchip"><span id="dtext">今日</span><input id="date" type="date" aria-label="日付"></span></div>
+      <div><label for="date">日付</label><input id="date" type="date"></div>
     </div>
     <button class="btn add" id="add" disabled>項目を選択</button>
     </div>
@@ -291,7 +230,7 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
     <button id="nextY" aria-label="次の年">›</button>
   </div>
   <div class="sum"><div class="v" id="aV"></div><div class="st" id="aSt"></div></div>
-  <div class="views"><button class="monthbtn" id="openMonth">月別</button><button class="monthbtn" id="openShop">店別</button><button class="monthbtn" id="openMachine">機種別</button><button class="monthbtn" id="openTag">タグ別</button></div>
+  <button class="monthbtn" id="openMonth">月別</button>
   <div id="aList"></div>
   <div class="csvrow">CSV　<button id="exportCsv" hidden>書き出す</button><span id="csvSep" hidden>・</span><button id="importCsv">読み込む</button></div>
   <input type="file" id="csvFile" accept=".csv,text/csv,text/comma-separated-values,application/vnd.ms-excel,text/plain" hidden>
@@ -301,12 +240,6 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
   <div class="shead"><button class="back" data-close="sheetM">‹ 戻る</button><h2>月別収支</h2><span class="sp"></span></div>
   <div class="sum"><div class="lbl" id="mL"></div><div class="v" id="mV"></div></div>
   <div id="mList"></div>
-</div></div>
-
-<div class="sheet" id="sheetG" aria-hidden="true"><div class="in">
-  <div class="shead"><button class="back" data-close="sheetG">‹ 戻る</button><h2 id="gT"></h2><span class="sp"></span></div>
-  <div class="sum"><div class="lbl" id="gL"></div><div class="v" id="gV"></div></div>
-  <div id="gList"></div>
 </div></div>
 
 <div class="sheet" id="sheetL" aria-hidden="true"><div class="in">
@@ -328,18 +261,8 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
     <div class="eacts"><button class="btn ghost2" id="eCancel">やめる</button><button class="btn add" id="eSave">保存する</button></div>
   </div>
   <div class="dsec">
-    <h3><span>店・機種</span><em id="tagState"></em></h3>
-    <div class="tagf"><label for="shop">店</label><input id="shop" maxlength="30" placeholder="入れると店別に集計できます" autocomplete="off"><div class="chips" id="shopChips"></div></div>
-    <div class="tagf"><label for="machine">機種</label><input id="machine" maxlength="30" placeholder="入れると機種別に集計できます" autocomplete="off"><div class="chips" id="machineChips"></div></div>
-  </div>
-  <div class="dsec">
-    <h3><span>タグ</span><em id="tagsState"></em></h3>
-    <div class="mytags chips" id="myTags"></div>
-    <div class="newtag"><input id="newTag" maxlength="12" placeholder="新しいタグ（例：イベント日）" autocomplete="off" enterkeyhint="done"><button id="addTag" disabled>追加</button></div>
-  </div>
-  <div class="dsec">
     <h3><span>メモ</span><em id="memoState"></em></h3>
-    <textarea id="memo" placeholder="出来事など"></textarea>
+    <textarea id="memo" placeholder="店・機種・出来事など"></textarea>
     <button class="memosave" id="memoSave">メモを保存</button>
   </div>
   <div class="dsec" id="imgSec">
@@ -360,14 +283,6 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
   <label for="rName">名前</label>
   <input id="rName" placeholder="例：1.25パチ" maxlength="10">
   <div class="acts"><button class="btn ghost" id="rCancel">やめる</button><button class="btn add" id="rOk">追加する</button></div>
-</div></div>
-
-<div class="dlg" id="dlgName" role="dialog" aria-modal="true" aria-labelledby="dnT"><div class="box">
-  <h3 id="dnT">名前を変える</h3>
-  <label for="nName">新しい名前</label>
-  <input id="nName" autocomplete="off">
-  <p class="small" id="nNote"></p>
-  <div class="acts"><button class="btn ghost" id="nCancel">やめる</button><button class="btn add" id="nOk">変える</button></div>
 </div></div>
 
 <div class="dlg" id="dlgAsk" role="alertdialog" aria-modal="true" aria-labelledby="askT"><div class="box">
@@ -489,16 +404,9 @@ function updateBtn(){
   if(!$("inv").value&&!$("ret").value){a.textContent="金額を入力";a.disabled=true;return}
   const b=num($("ret").value)-num($("inv").value);
   a.textContent=rateOf(sel).name+"　"+yen(b)+"　を記録";a.disabled=false;
-  a.classList.toggle("win",b>0);a.classList.toggle("lose",b<0);
 }
-/* group digits while typing: 20000 -> 20,000 */
-const group=el=>{const n=String(el.value).replace(/[^\d]/g,"");el.value=n?Number(n).toLocaleString("ja-JP"):""};
-$("inv").oninput=$("ret").oninput=e=>{group(e.target);updateBtn()};
-const _ub=updateBtn;updateBtn=function(){const a=$("add");a.classList.remove("win","lose");_ub()};
-const md=d=>{const [y,m,dd]=d.split("-");return (+m)+"/"+(+dd)};
-const syncDate=()=>{const v=$("date").value||today();$("dtext").textContent=v===today()?"今日":md(v);$("dchip").classList.toggle("past",v!==today())};
-$("date").addEventListener("change",syncDate);
-$("date").value=today();syncDate();
+$("inv").oninput=$("ret").oninput=updateBtn;
+$("date").value=today();
 $("add").onclick=()=>{
   if(editing)setEditing(false);
   const e={t:Date.now(),rate:sel,inv:num($("inv").value),ret:num($("ret").value),date:$("date").value||today()};
@@ -508,31 +416,12 @@ $("add").onclick=()=>{
 };
 
 /* render */
-let shown=null;
-function countTo(el,to){
-  const from=shown===null?to:shown;shown=to;
-  if(from===to||matchMedia("(prefers-reduced-motion: reduce)").matches){el.textContent=yen(to);return}
-  const t0=performance.now(),dur=600;
-  const step=now=>{const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=yen(Math.round(from+(to-from)*e));if(k<1)requestAnimationFrame(step)};
-  requestAnimationFrame(step);el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump");
-}
-function renderSpark(){
-  const ys=state.entries.filter(e=>e.date.startsWith(NOW+"-")),cur=new Date().getMonth()+1;
-  const sums=[];for(let m=1;m<=12;m++)sums.push(bal(ys.filter(e=>e.date.slice(5,7)===pad(m))));
-  const max=Math.max(1,...sums.map(Math.abs)),box=$("spark");box.innerHTML="";
-  sums.forEach((v,i)=>{const c=el("i",(v>0?"p":v<0?"n":"")+"");if(v){const sp=el("span");sp.style.height=(Math.abs(v)/max*50)+"%";c.append(sp)}box.append(c)});
-  const mv=sums[cur-1],ml=ys.filter(e=>e.date.slice(5,7)===pad(cur)).length,wins=ys.filter(e=>e.ret>e.inv).length;
-  $("mstat").innerHTML="";
-  const a=el("span",null,"今月 ");a.append(el("b",cls(mv),ml?yen(mv):"—"));
-  $("mstat").append(a,document.createTextNode(ys.length?"　勝率 "+Math.round(wins/ys.length*100)+"%":""));
-}
 function render(){
   const total=bal(state.entries.filter(e=>e.date.startsWith(NOW+"-")));
-  const t=$("total");t.className="total "+(total>0?"plus":total<0?"minus":"");countTo(t,total);renderSpark();
+  const t=$("total");t.textContent=yen(total);t.className="total "+(total>0?"plus":total<0?"minus":"");
   $("yLabel").textContent=NOW+"年の収支";
   if(isOn("sheetA"))renderA();
   if(isOn("sheetM"))renderM();
-  if(isOn("sheetG"))renderG();
   if(isOn("sheetL"))renderL();
   if(isOn("sheetD"))renderD();
 }
@@ -591,11 +480,6 @@ function renderL(){
   let list,title,label;
   if(listFilter.type==="rate"){
     const r=rateOf(listFilter.id);list=yearEntries().filter(e=>e.rate===listFilter.id);title=r.name;label=year+"年 "+r.name;
-  }else if(listFilter.type==="tags"){
-    const v=listFilter.v;list=yearEntries().filter(e=>(e.tags||[]).includes(v));title="#"+v;label=year+"年 #"+v;
-  }else if(listFilter.type==="shop"||listFilter.type==="machine"){
-    const k=listFilter.type,v=listFilter.v;list=yearEntries().filter(e=>(e[k]||"")===v);
-    title=v||(k==="shop"?"店が未設定":"機種が未設定");label=year+"年 "+title;
   }else{
     list=yearEntries().filter(e=>e.date.slice(5,7)===pad(listFilter.m));title=year+"年"+listFilter.m+"月";label=listFilter.m+"月の合計";
   }
@@ -609,9 +493,7 @@ function renderL(){
     const row=el("button","row");
     const head=(+m)+"月"+(+d)+"日"+(listFilter.type==="month"?"　"+rateOf(e.rate).name:"");
     const meta=el("div","meta",head);
-    {const w=[listFilter.type!=="shop"&&e.shop,listFilter.type!=="machine"&&e.machine].filter(Boolean).join(" ");if(w)meta.append(el("span","where",w))}
     const tg=el("span","tags");
-    for(const x of e.tags||[])tg.append(el("span",null,"#"+x));
     if(e.memo)tg.append(el("span",null,"メモ"));
     {const md=mediaOf(e),ni=md.filter(x=>x.k!=="v").length,nv=md.length-ni;
      if(ni)tg.append(el("span",null,"画像"+ni));if(nv)tg.append(el("span",null,"動画"+nv));}
@@ -656,110 +538,6 @@ $("eSave").onclick=async()=>{
   const ok=await persist();
   toast(ok?"修正しました":"保存できませんでした");
 };
-/* store / machine */
-/* names already used, most recent first; for machines, the ones played on the same item (1パチ, 20スロ...) come first */
-const used=(k,rate)=>{
-  const seen=new Map(),recent=[...state.entries].sort((a,b)=>b.date.localeCompare(a.date)||b.t-a.t);
-  for(const pass of [true,false])for(const e of recent)if(e[k]&&!seen.has(e[k])&&(!pass||(k==="machine"&&e.rate===rate)))seen.set(e[k],1);
-  return [...seen.keys()];
-};
-/* while typing, only the names that contain what has been typed */
-function renderChips(){
-  const e=findEntry(cur);if(!e)return;
-  for(const k of ["shop","machine"]){
-    const box=$(k+"Chips");box.innerHTML="";
-    const q=document.activeElement===$(k)?$(k).value.trim().toLowerCase():"";
-    const list=used(k,e.rate).filter(v=>v!==(e[k]||"")&&v.toLowerCase()!==q&&(!q||v.toLowerCase().includes(q)));
-    for(const v of list.slice(0,6)){const c=el("button",null,v);c.onmousedown=ev=>ev.preventDefault();c.onclick=()=>{$(k).value=v;saveTag(k);$(k).blur()};box.append(c)}
-  }
-}
-async function saveTag(k){
-  const e=findEntry(cur);if(!e)return;
-  const v=$(k).value.trim().slice(0,30);if((e[k]||"")===v)return;
-  if(v)e[k]=v;else delete e[k];touch(e);renderChips();
-  $("tagState").textContent=await persist()?"保存しました":"保存できませんでした";
-}
-for(const k of ["shop","machine"]){$(k).addEventListener("input",renderChips);$(k).addEventListener("change",()=>saveTag(k));$(k).addEventListener("focus",()=>document.body.classList.add("kb"));$(k).addEventListener("blur",()=>{document.body.classList.remove("kb");saveTag(k);renderChips()})}
-/* user-made tags: attached ones first (tap to remove), then every other tag already made (tap to add) */
-const allTags=()=>{const seen=new Map();for(const e of [...state.entries].sort((a,b)=>b.date.localeCompare(a.date)||b.t-a.t))for(const x of e.tags||[])if(!seen.has(x))seen.set(x,1);return [...seen.keys()]};
-function renderTags(){
-  const e=findEntry(cur);if(!e)return;
-  const mine=e.tags||[],box=$("myTags");box.innerHTML="";
-  for(const x of mine){const c=el("button","on","#"+x);c.setAttribute("aria-label",x+" を外す");c.onclick=()=>setTags(mine.filter(y=>y!==x));box.append(c)}
-  for(const x of allTags().filter(x=>!mine.includes(x))){const c=el("button",null,"#"+x);c.setAttribute("aria-label",x+" を付ける");c.onclick=()=>setTags(mine.concat(x));box.append(c)}
-  if(!box.childNodes.length)box.append(el("span","tagnote","作ったタグは、ほかの記録にもタップで付けられます"));
-}
-async function setTags(list){
-  const e=findEntry(cur);if(!e)return;
-  if(list.length)e.tags=list;else delete e.tags;touch(e);renderTags();
-  $("tagsState").textContent=await persist()?"保存しました":"保存できませんでした";
-}
-$("newTag").oninput=()=>{$("addTag").disabled=!$("newTag").value.trim()};
-const addNewTag=()=>{const v=$("newTag").value.replace(/[、,]/g," ").trim().replace(/^#/,"").slice(0,12);if(!v)return;const e=findEntry(cur);if(!e)return;
-  const mine=e.tags||[];$("newTag").value="";$("addTag").disabled=true;if(!mine.includes(v))setTags(mine.concat(v))};
-$("addTag").onclick=addNewTag;
-$("newTag").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();addNewTag()}});
-$("newTag").addEventListener("focus",()=>document.body.classList.add("kb"));$("newTag").addEventListener("blur",()=>document.body.classList.remove("kb"));
-let groupKind=null;
-function renderG(){
-  if(!groupKind)return;
-  const k=groupKind,ys=yearEntries(),g=new Map();
-  for(const e of ys)for(const v of k==="tags"?(e.tags||[]):[e[k]||""]){if(!g.has(v))g.set(v,[]);g.get(v).push(e)}
-  $("gT").textContent=k==="shop"?"店別収支":k==="machine"?"機種別収支":"タグ別収支";
-  setSum("gL","gV",year+"年 合計",bal(ys));
-  const box=$("gList");box.innerHTML="";
-  const rows=[...g.entries()].sort((a,b)=>(a[0]==="")-(b[0]==="")||b[1].length-a[1].length);
-  if(!rows.length){box.append(el("div","empty","記録はありません"));return}
-  for(const [v,list] of rows){
-    const s=bal(list),wins=list.filter(e=>e.ret>e.inv).length;
-    const b=el("button","row grow"+(v?"":" unset"));
-    const left=el("span","nm",k==="tags"?"#"+v:(v||"未設定"));left.append(el("small",null,list.length+"回　勝率 "+Math.round(wins/list.length*100)+"%"));
-    const right=el("span","n "+cls(s),yen(s));right.append(el("span","chev","›"));
-    b.append(left,right);b.onclick=()=>{if(b.dataset.held){delete b.dataset.held;return}listFilter={type:k,v};renderL();show("sheetL")};
-    if(v)holdToRename(b,k,v);
-    box.append(b);
-  }
-  if(rows.some(r=>r[0]))box.append(el("div","gnote","名前を長押しすると、名前を変えたり、ほかの名前とまとめたりできます"));
-}
-function holdToRename(b,k,v){
-  let timer=null,x=0,y=0;
-  const stop=()=>{clearTimeout(timer);timer=null};
-  b.addEventListener("pointerdown",ev=>{x=ev.clientX;y=ev.clientY;stop();timer=setTimeout(()=>{timer=null;b.dataset.held=1;openRename(k,v)},500)});
-  b.addEventListener("pointermove",ev=>{if(timer&&Math.hypot(ev.clientX-x,ev.clientY-y)>10)stop()});
-  for(const t of ["pointerup","pointerleave","pointercancel"])b.addEventListener(t,stop);
-  b.addEventListener("contextmenu",ev=>{ev.preventDefault();stop();openRename(k,v)});
-}
-let renaming=null;
-const kindName=k=>k==="shop"?"店":k==="machine"?"機種":"タグ";
-const namesOf=k=>k==="tags"?allTags():used(k);
-function openRename(k,v){
-  renaming={k,v};
-  $("dnT").textContent=kindName(k)+"の名前を変える";
-  $("nName").value=v;$("nName").maxLength=k==="tags"?12:30;nameNote();
-  $("dlgName").classList.add("on");setTimeout(()=>{$("nName").focus();$("nName").select()},50);
-}
-function cleanName(k,v){v=v.trim();if(k==="tags")v=v.replace(/[、,]/g," ").replace(/^#/,"").trim();return v.slice(0,k==="tags"?12:30)}
-function nameNote(){
-  const {k,v}=renaming,to=cleanName(k,$("nName").value);
-  const merge=to&&to!==v&&namesOf(k).includes(to);
-  $("nNote").textContent=merge?"「"+to+"」と同じ名前になるので、1つにまとまります。":"この"+kindName(k)+"が付いた記録すべての名前が変わります。";
-  $("nOk").textContent=merge?"まとめる":"変える";$("nOk").disabled=!to||to===v;
-}
-$("nName").oninput=nameNote;
-$("nCancel").onclick=()=>{$("dlgName").classList.remove("on");renaming=null};
-$("nOk").onclick=async()=>{
-  const {k,v}=renaming,to=cleanName(k,$("nName").value);if(!to||to===v)return;
-  const merge=namesOf(k).includes(to);
-  for(const e of state.entries){
-    if(k==="tags"){if((e.tags||[]).includes(v)){e.tags=[...new Set(e.tags.map(x=>x===v?to:x))];touch(e)}}
-    else if(e[k]===v){e[k]=to;touch(e)}
-  }
-  $("dlgName").classList.remove("on");renaming=null;render();
-  toast((await persist())?(merge?"まとめました":"名前を変えました"):"保存できませんでした");
-};
-$("openShop").onclick=()=>{groupKind="shop";renderG();show("sheetG")};
-$("openMachine").onclick=()=>{groupKind="machine";renderG();show("sheetG")};
-$("openTag").onclick=()=>{groupKind="tags";renderG();show("sheetG")};
 function renderD(){
   const e=findEntry(cur);if(!e){hide("sheetD");return}
   const [y,m,d]=e.date.split("-"),b=e.ret-e.inv;
@@ -767,8 +545,6 @@ function renderD(){
   setSum("dL","dV",y+"年"+(+m)+"月"+(+d)+"日　"+rateOf(e.rate).name,b);
   $("dSt").textContent="投資 "+e.inv.toLocaleString()+"円 ／ 回収 "+e.ret.toLocaleString()+"円";
   if(document.activeElement!==$("memo")){$("memo").value=e.memo||"";$("memoState").textContent=e.memo?"保存済み":""}
-  for(const k of ["shop","machine"])if(document.activeElement!==$(k))$(k).value=e[k]||"";
-  renderChips();renderTags();
   renderMedia();
 }
 function thumb(item){
@@ -899,9 +675,9 @@ $("exportCsv").onclick=async()=>{
   if(!downloads)return;
   const list=[...state.entries].sort((a,b)=>a.date.localeCompare(b.date)||a.t-b.t);
   if(!list.length){toast("書き出す記録がありません");return}
-  const rows=[["日付","項目","投資","回収","収支","店","機種","タグ","メモ","画像・動画の数"]];
-  for(const e of list)rows.push([e.date,rateOf(e.rate).name,e.inv,e.ret,e.ret-e.inv,e.shop||"",e.machine||"",(e.tags||[]).join("、"),e.memo||"",mediaOf(e).length]);
-  const body=rows.map((r,i)=>r.map((c,j)=>csvCell(c,i>0&&j===1||i>0&&j>=5&&j<=8)).join(",")).join("\r\n");
+  const rows=[["日付","項目","投資","回収","収支","メモ","画像・動画の数"]];
+  for(const e of list)rows.push([e.date,rateOf(e.rate).name,e.inv,e.ret,e.ret-e.inv,e.memo||"",mediaOf(e).length]);
+  const body=rows.map((r,i)=>r.map((c,j)=>csvCell(c,i>0&&(j===1||j===5))).join(",")).join("\r\n");
   try{
     await downloads.save({filename:"pachi-shushi-"+today()+".csv",data:"\uFEFF"+body});
     toast("書き出しました（"+list.length+"件）");
@@ -941,7 +717,7 @@ $("csvFile").onchange=async ev=>{
   const rows=parseCsv(text);
   if(rows.length<2){toast("記録が見つかりませんでした");return}
   const head=rows[0].map(x=>x.trim());
-  const cD=head.indexOf("日付"),cR=head.indexOf("項目"),cI=head.indexOf("投資"),cO=head.indexOf("回収"),cM=head.indexOf("メモ"),cS=head.indexOf("店"),cMa=head.indexOf("機種"),cT=head.indexOf("タグ");
+  const cD=head.indexOf("日付"),cR=head.indexOf("項目"),cI=head.indexOf("投資"),cO=head.indexOf("回収"),cM=head.indexOf("メモ");
   if(cD<0||cR<0||cI<0||cO<0){toast("日付・項目・投資・回収の列が必要です");return}
   const have=new Map();
   for(const e of state.entries){const k=e.date+"|"+rateOf(e.rate).name+"|"+e.inv+"|"+e.ret;have.set(k,(have.get(k)||0)+1)}
@@ -958,10 +734,6 @@ $("csvFile").onchange=async ev=>{
     const e={t:now+i,rate:rate.id,inv,ret,date,u:now};
     const memo=cM>=0?unguard(r[cM]||"").trim():"";
     if(memo)e.memo=memo;
-    const shop=cS>=0?unguard(r[cS]||"").trim().slice(0,30):"",machine=cMa>=0?unguard(r[cMa]||"").trim().slice(0,30):"";
-    if(shop)e.shop=shop;if(machine)e.machine=machine;
-    const tags=cT>=0?[...new Set(unguard(r[cT]||"").split(/[、,]/).map(x=>x.trim().replace(/^#/,"").slice(0,12)).filter(Boolean))]:[];
-    if(tags.length)e.tags=tags;
     state.entries.push(e);added++;
   }
   if(newRates)state.order=orderedRates().map(x=>x.id);
