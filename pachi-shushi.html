@@ -384,7 +384,7 @@ const BASE=[
   {id:"1p",name:"1パチ",kind:"p"},{id:"2p",name:"2パチ",kind:"p"},{id:"4p",name:"4パチ",kind:"p"},
   {id:"5s",name:"5スロ",kind:"s"},{id:"10s",name:"10スロ",kind:"s"},{id:"20s",name:"20スロ",kind:"s"}
 ];
-let state={entries:[],custom:[],order:[],deleted:[]};
+let state={entries:[],custom:[],order:[],deleted:[],hidden:[]};
 const NOW=new Date().getFullYear();
 let year=NOW, sel=null, store=null, newKind="p", listFilter=null;
 const allRates=()=>orderedRates();
@@ -421,7 +421,8 @@ applyTheme();
 /* rate buttons */
 let editing=false;
 function orderedRates(){
-  const all=BASE.concat(state.custom), map=new Map(all.map(r=>[r.id,r]));
+  const hid=new Set(state.hidden||[]);
+  const all=BASE.concat(state.custom).filter(r=>!hid.has(r.id)), map=new Map(all.map(r=>[r.id,r]));
   const ids=(state.order||[]).filter(id=>map.has(id));
   for(const r of all)if(!ids.includes(r.id))ids.push(r.id);
   return ids.map(id=>map.get(id));
@@ -431,7 +432,7 @@ function buildRates(){
   const g=$("rates");g.innerHTML="";
   for(const r of orderedRates()){
     const b=el("button","rate",r.name);b.dataset.id=r.id;b.setAttribute("aria-pressed",String(r.id===sel));
-    if(r.custom){const x=el("span","x","×");x.setAttribute("aria-hidden","true");b.append(x)}
+    {const x=el("span","x","×");x.setAttribute("aria-hidden","true");b.append(x)}
     b.addEventListener("click",e=>{
       if(!editing){selectRate(r.id);return}
       if(e.target.closest(".x")){removeRate(r);return}
@@ -468,17 +469,21 @@ $("rOk").onclick=()=>{
   const name=$("rName").value.trim();
   if(!name){$("rName").focus();return}
   if(orderedRates().some(r=>r.name===name)){toast("同じ名前の項目があります");return}
-  const r={id:"c"+Date.now(),name,custom:true};
-  state.custom.push(r);state.order=orderedRates().map(x=>x.id);persist();buildRates();
-  $("dlgRate").classList.remove("on");toast(name+" を追加しました");
+  // the same name as a deleted item brings that item back, so its past records join up again
+  const back=BASE.concat(state.custom).find(r=>r.name===name&&(state.hidden||[]).includes(r.id));
+  const r=back||{id:"c"+Date.now(),name,custom:true};
+  if(back)state.hidden=state.hidden.filter(id=>id!==back.id);else state.custom.push(r);
+  state.order=orderedRates().map(x=>x.id).filter(id=>id!==r.id).concat(r.id);persist();buildRates();
+  $("dlgRate").classList.remove("on");toast(name+(back?" を戻しました":" を追加しました"));
   $("ratebox").scrollTop=$("ratebox").scrollHeight;
   if(!editing)selectRate(r.id);
 };
 async function removeRate(r){
+  if(orderedRates().length<=1){toast("項目は1つ以上残してください");return}
   const used=state.entries.filter(e=>e.rate===r.id).length;
-  const msg=used?r.name+" のボタンを削除します。\nこの項目の記録"+used+"件は残り、「削除した項目」として集計されます。":r.name+" のボタンを削除します。";
+  const msg=r.name+" のボタンを削除します。"+(used?"\nこの項目の記録"+used+"件は残り、「"+r.name+"」のまま集計されます。":"")+"\n同じ名前で追加し直すと元に戻ります。";
   if(!await ask(msg))return;
-  state.custom=state.custom.filter(x=>x.id!==r.id);
+  state.hidden=[...new Set((state.hidden||[]).concat(r.id))];
   state.order=(state.order||[]).filter(id=>id!==r.id);
   if(sel===r.id)sel=null;
   persist();buildRates();updateBtn();render();toast("削除しました");
@@ -639,7 +644,7 @@ function closeEdit(){$("editBox").hidden=true;$("editRec").hidden=false}
 function fillEditRates(e){
   const sl=$("eRate");sl.innerHTML="";
   const list=orderedRates();
-  if(!list.some(r=>r.id===e.rate)){const o=document.createElement("option");o.value=e.rate;o.textContent="削除した項目";sl.append(o)}
+  if(!list.some(r=>r.id===e.rate)){const o=document.createElement("option");o.value=e.rate;o.textContent=rateOf(e.rate).name;sl.append(o)}
   for(const r of list){const o=document.createElement("option");o.value=r.id;o.textContent=r.name;sl.append(o)}
   sl.value=e.rate;
 }
@@ -947,7 +952,7 @@ $("csvFile").onchange=async ev=>{
   if(cD<0||cR<0||cI<0||cO<0){toast("日付・項目・投資・回収の列が必要です");return}
   const have=new Map();
   for(const e of state.entries){const k=e.date+"|"+rateOf(e.rate).name+"|"+e.inv+"|"+e.ret;have.set(k,(have.get(k)||0)+1)}
-  const byName=new Map(orderedRates().map(r=>[r.name,r]));
+  const byName=new Map(BASE.concat(state.custom).map(r=>[r.name,r]));
   let added=0,dup=0,bad=0,newRates=0;const now=Date.now();
   for(let i=1;i<rows.length;i++){
     const r=rows[i],date=normDate(r[cD]||""),name=unguard((r[cR]||"").trim()).slice(0,10);
@@ -998,7 +1003,7 @@ function persist(){
   })();
   return writing;
 }
-function norm(s){s=s||{};return {entries:(Array.isArray(s)?s:(s.entries||[])).map(normEntry),custom:s.custom||[],order:s.order||[],deleted:s.deleted||[]}}
+function norm(s){s=s||{};return {entries:(Array.isArray(s)?s:(s.entries||[])).map(normEntry),custom:s.custom||[],order:s.order||[],deleted:s.deleted||[],hidden:s.hidden||[]}}
 const localStore={
   load(){try{return norm(JSON.parse(localStorage.getItem("pachi-shushi")||"null"))}catch(e){return norm()}},
   save(d){try{localStorage.setItem("pachi-shushi",JSON.stringify(d))}catch(e){}}
@@ -1030,12 +1035,13 @@ buildRates();render();
       entries:state.entries.filter(e=>!del.has(e.t)),
       custom:remote.custom.concat(state.custom.filter(c=>!seenC.has(c.id))),
       order:remote.order.length?remote.order:state.order,
-      deleted:[...del].slice(-500)
+      deleted:[...del].slice(-500),
+      hidden:snap.exists&&Array.isArray(snap.data().hidden)?remote.hidden:state.hidden
     };
-    store={remote:d=>ref.set({entries:d.entries,custom:d.custom,order:d.order,deleted:d.deleted||[]}),
+    store={remote:d=>ref.set({entries:d.entries,custom:d.custom,order:d.order,deleted:d.deleted||[],hidden:d.hidden||[]}),
       check:async t=>{const sn=await ref.get();const es=sn.exists?(sn.data().entries||[]):[];const x=es.find(e=>e.t===t);return x?(x.memo||""):null}};
     const changed=JSON.stringify(merged)!==JSON.stringify(remote);
-    state.entries=merged.entries;state.custom=merged.custom;state.order=merged.order;state.deleted=merged.deleted;
+    state.entries=merged.entries;state.custom=merged.custom;state.order=merged.order;state.deleted=merged.deleted;state.hidden=merged.hidden;
     ready=true;
     if(changed)await persist();
     buildRates();render();
