@@ -69,7 +69,11 @@ button{touch-action:manipulation}
 .rate .x{position:absolute;top:-1px;right:-1px;width:26px;height:26px;border-radius:0 6px 0 6px;background:var(--minus);color:#fff;
   font-size:14px;line-height:26px;text-align:center;display:none}
 .editing .rate .x{display:block}
-.addlink{display:block;margin:4px 0 0 auto;background:none;border:0;color:var(--sub);font:400 13px "Noto Sans JP",sans-serif;cursor:pointer;padding:6px 0}
+.itemrow{display:flex;align-items:center;gap:8px;margin-top:4px}
+.itemrow .ehint{text-align:center;padding:0}
+.itemrow .tbtn{padding:6px 0}
+.itemrow [hidden]{display:none}
+.addlink{display:block;margin:0 0 0 auto;background:none;border:0;color:var(--sub);font:400 13px "Noto Sans JP",sans-serif;cursor:pointer;padding:6px 0}
 .fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 label{display:block;font-size:11px;color:var(--sub);letter-spacing:.08em;margin-bottom:2px}
 input{width:100%;font:500 17px "Noto Sans JP",sans-serif;color:var(--ink);background:var(--bg);
@@ -277,8 +281,26 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .pick .phead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .pick h3{margin:0;font-size:16px}
 .pick .pdone{background:none;border:0;color:var(--ink);font:700 15px "Noto Sans JP",sans-serif;cursor:pointer;padding:6px 0}
-.pick .plist{overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding:2px 0 4px}
-.pick .plist button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:18px;padding:8px 14px;font:400 14px "Noto Sans JP",sans-serif;cursor:pointer}
+.pick .plist{overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding:2px 0 24px;min-height:0}
+.pick .plist button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:18px;padding:8px 14px;font:400 14px "Noto Sans JP",sans-serif;cursor:pointer;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick .phead .pedit{background:none;border:0;color:var(--sub);font:500 14px "Noto Sans JP",sans-serif;cursor:pointer;padding:6px 14px 6px 0;margin-left:auto}
+.pick.editing .pedit{color:var(--ink);font-weight:700}
+.pick .pnote{display:none;font-size:12px;color:var(--sub);margin:-4px 0 10px}
+.pick.editing .pnote{display:block}
+.pick.editing .pnew,.pick.editing .plist .none{display:none}
+.pick.editing .plist button{border-style:dashed;padding-left:10px}
+.pick.editing .plist button[aria-pressed="true"]{background:var(--bg);color:var(--ink);border-color:var(--line)}
+.pick .plist .x{display:none;color:var(--minus);font-weight:700;margin-right:6px}
+.pick .plist small{display:none;color:var(--sub);font-size:11px;margin-left:6px}
+.pick.editing .plist small{display:inline}
+.pick .plist .addnew{border:1px solid var(--ink);font-weight:700}
+#dlgDrop,#dlgName{z-index:90}   /* above the picker they are opened from */
+.dlg .stack{display:grid;gap:8px;margin-top:18px}
+.dlg .stack .btn{margin-top:0;text-align:left;padding:12px 14px;line-height:1.4}
+.dlg .stack .btn small{display:block;font-size:12px;font-weight:400;opacity:.75;margin-top:2px;letter-spacing:0}
+.dlg .stack .danger2{border:1px solid var(--minus);background:var(--bg);color:var(--minus)}
+.dlg .stack .ghost{text-align:center}
 .pick .plist button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .pick .plist .none{color:var(--sub);border-style:dashed}
 .pick .pnew{display:flex;gap:8px;margin-bottom:12px}
@@ -303,8 +325,7 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 <body>
 <div class="app">
   <div class="top">
-    <button class="tbtn" id="editBtn">編集</button>
-    <span class="ehint" id="ehint" hidden>動かしたいボタンをタップ</span>
+    <span></span>
     <button class="theme" id="theme">☾</button>
   </div>
 
@@ -322,7 +343,11 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
     <div class="ratebox" id="ratebox">
       <div class="rates" id="rates"></div>
     </div>
-    <button class="addlink" id="addLink">＋ 項目を追加</button>
+    <div class="itemrow">
+      <button class="tbtn" id="editBtn">並べ替え・削除</button>
+      <span class="ehint" id="ehint" hidden></span>
+      <button class="addlink" id="addLink">＋ 項目を追加</button>
+    </div>
     <div class="bottom">
     <div class="pro" id="pro">
       <button id="pShop"><small>店</small><span></span></button>
@@ -428,6 +453,17 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
   <div class="acts"><button class="btn ghost" id="nCancel">やめる</button><button class="btn add" id="nOk">変える</button></div>
 </div></div>
 
+<div class="dlg" id="dlgDrop" role="alertdialog" aria-modal="true" aria-labelledby="dropT"><div class="box">
+  <h3 id="dropT"></h3>
+  <p id="dropP"></p>
+  <div class="stack">
+    <button class="btn ghost2" id="dropRename"><span>名前を変える</span><small id="dropRenS"></small></button>
+    <button class="btn ghost2" id="dropOnly"><span>候補から外す</span><small>記録はそのまま。選ぶ一覧に出なくなるだけです</small></button>
+    <button class="btn danger2" id="dropAll"><span>記録からも消す</span><small id="dropAllS"></small></button>
+    <button class="btn ghost" id="dropNo">やめる</button>
+  </div>
+</div></div>
+
 <div class="dlg" id="dlgAsk" role="alertdialog" aria-modal="true" aria-labelledby="askT"><div class="box">
   <h3 id="askT">削除しますか？</h3>
   <p id="askP"></p>
@@ -435,8 +471,9 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 </div></div>
 
 <div class="pick" id="pick" aria-hidden="true"><div class="pbox" role="dialog" aria-modal="true" aria-labelledby="pT">
-  <div class="phead"><h3 id="pT"></h3><button class="pdone" id="pDone">完了</button></div>
-  <div class="pnew"><input id="pNew" autocomplete="off" enterkeyhint="done"><button id="pAdd" disabled>追加</button></div>
+  <div class="phead"><h3 id="pT"></h3><button class="pedit" id="pEdit">編集</button><button class="pdone" id="pDone">完了</button></div>
+  <p class="pnote">名前をタップすると、名前を変えたり消したりできます。数字はその名前を使った記録の数です</p>
+  <div class="pnew"><input id="pNew" autocomplete="off" enterkeyhint="done" aria-label="探す・追加"></div>
   <div class="plist" id="pList"></div>
 </div></div>
 
@@ -448,11 +485,12 @@ const BASE=[
   {id:"1p",name:"1パチ",kind:"p"},{id:"2p",name:"2パチ",kind:"p"},{id:"4p",name:"4パチ",kind:"p"},
   {id:"5s",name:"5スロ",kind:"s"},{id:"10s",name:"10スロ",kind:"s"},{id:"20s",name:"20スロ",kind:"s"}
 ];
-let state={entries:[],custom:[],order:[],deleted:[],hidden:[]};
+let state={entries:[],custom:[],order:[],deleted:[],hidden:[],dropped:{},renamed:{}};
 const NOW=new Date().getFullYear();
 let year=NOW, sel=null, store=null, newKind="p", listFilter=null;
 const allRates=()=>orderedRates();
-const rateOf=id=>BASE.concat(state.custom).find(r=>r.id===id)||{id,name:"削除した項目"};
+const rateDefs=()=>BASE.map(r=>({...r,name:(state.renamed||{})[r.id]||r.name})).concat(state.custom);
+const rateOf=id=>rateDefs().find(r=>r.id===id)||{id,name:"削除した項目"};
 
 const $=id=>document.getElementById(id);
 const yen=n=>(n>0?"+":n<0?"−":"±")+Math.abs(n).toLocaleString("ja-JP")+"円";
@@ -486,7 +524,7 @@ applyTheme();
 let editing=false;
 function orderedRates(){
   const hid=new Set(state.hidden||[]);
-  const all=BASE.concat(state.custom).filter(r=>!hid.has(r.id)), map=new Map(all.map(r=>[r.id,r]));
+  const all=rateDefs().filter(r=>!hid.has(r.id)), map=new Map(all.map(r=>[r.id,r]));
   const ids=(state.order||[]).filter(id=>map.has(id));
   for(const r of all)if(!ids.includes(r.id))ids.push(r.id);
   return ids.map(id=>map.get(id));
@@ -497,7 +535,9 @@ function buildRates(){
   for(const r of orderedRates()){
     const b=el("button","rate",r.name);b.dataset.id=r.id;b.setAttribute("aria-pressed",String(r.id===sel));
     {const x=el("span","x","×");x.setAttribute("aria-hidden","true");b.append(x)}
+    holdItem(b,r);
     b.addEventListener("click",e=>{
+      if(b.dataset.held){delete b.dataset.held;return}
       if(!editing){selectRate(r.id);return}
       if(e.target.closest(".x")){removeRate(r);return}
       tapEdit(r.id);
@@ -506,9 +546,19 @@ function buildRates(){
   }
   $("ratebox").style.setProperty("--rows",Math.min(3,Math.max(1,Math.ceil(g.children.length/3))));
 }
+/* long-press an item while editing to rename it */
+function holdItem(b,r){
+  let timer=null,x=0,y=0;
+  const stop=()=>{clearTimeout(timer);timer=null};
+  b.addEventListener("pointerdown",ev=>{if(!editing||ev.target.closest(".x"))return;x=ev.clientX;y=ev.clientY;stop();
+    timer=setTimeout(()=>{timer=null;b.dataset.held=1;openRateRename(r)},500)});
+  b.addEventListener("pointermove",ev=>{if(timer&&Math.hypot(ev.clientX-x,ev.clientY-y)>10)stop()});
+  for(const t of ["pointerup","pointerleave","pointercancel"])b.addEventListener(t,stop);
+  b.addEventListener("contextmenu",ev=>{if(!editing)return;ev.preventDefault();stop();openRateRename(r)});
+}
 /* tap-to-swap reorder (edit mode) */
 let picked=null;
-function hint(){$("ehint").textContent=picked?"入れ替える相手をタップ":"動かしたいボタンをタップ"}
+function hint(){$("ehint").textContent=picked?"入れ替える相手をタップ":"タップで入れ替え・長押しで名前を変更"}
 function tapEdit(id){
   if(!picked){picked=id}
   else if(picked===id){picked=null}
@@ -521,20 +571,32 @@ function tapEdit(id){
 }
 function setEditing(v){
   editing=v;document.body.classList.toggle("editing",v);
-  $("editBtn").textContent=v?"完了":"編集";$("editBtn").classList.toggle("done",v);
+  $("editBtn").textContent=v?"完了":"並べ替え・削除";$("addLink").hidden=v;$("editBtn").classList.toggle("done",v);
   $("ehint").hidden=!v;picked=null;document.body.classList.remove("haspick");
   document.querySelectorAll("#rates .rate").forEach(x=>x.classList.remove("picked"));hint();
 }
 $("editBtn").onclick=()=>setEditing(!editing);
 $("addLink").onclick=()=>openAdd();
-function openAdd(){$("rName").value="";$("dlgRate").classList.add("on");setTimeout(()=>$("rName").focus(),50)}
+let renamingRate=null;
+function openRateRename(r){renamingRate=r;$("drT").textContent="項目の名前を変える";$("rOk").textContent="変える";
+  $("rName").value=r.name;$("dlgRate").classList.add("on");setTimeout(()=>{$("rName").focus();$("rName").select()},50)}
+function openAdd(){renamingRate=null;$("drT").textContent="項目を追加";$("rOk").textContent="追加する";$("rName").value="";$("dlgRate").classList.add("on");setTimeout(()=>$("rName").focus(),50)}
 $("rCancel").onclick=()=>$("dlgRate").classList.remove("on");
 $("rOk").onclick=()=>{
   const name=$("rName").value.trim();
   if(!name){$("rName").focus();return}
+  if(renamingRate){
+    const r=renamingRate;
+    if(name===r.name){$("dlgRate").classList.remove("on");return}
+    if(rateDefs().some(x=>x.name===name&&x.id!==r.id)){toast("同じ名前の項目があります");return}
+    if(r.custom){const c=state.custom.find(x=>x.id===r.id);if(c)c.name=name}
+    else state.renamed=Object.assign({},state.renamed,{[r.id]:name});
+    renamingRate=null;persist();buildRates();updateBtn();render();
+    $("dlgRate").classList.remove("on");toast("「"+name+"」に変えました");return;
+  }
   if(orderedRates().some(r=>r.name===name)){toast("同じ名前の項目があります");return}
   // the same name as a deleted item brings that item back, so its past records join up again
-  const back=BASE.concat(state.custom).find(r=>r.name===name&&(state.hidden||[]).includes(r.id));
+  const back=rateDefs().find(r=>r.name===name&&(state.hidden||[]).includes(r.id));
   const r=back||{id:"c"+Date.now(),name,custom:true};
   if(back)state.hidden=state.hidden.filter(id=>id!==back.id);else state.custom.push(r);
   state.order=orderedRates().map(x=>x.id).filter(id=>id!==r.id).concat(r.id);persist();buildRates();
@@ -757,11 +819,19 @@ $("eSave").onclick=async()=>{
   toast(ok?"修正しました":"保存できませんでした");
 };
 /* store / machine */
-/* names already used, most recent first; for machines, the ones played on the same item (1パチ, 20スロ...) come first */
+/* how often each name is used: k is "shop", "machine" or "tags" */
+function nameStats(k){
+  const m=new Map();
+  for(const e of state.entries)for(const v of k==="tags"?(e.tags||[]):(e[k]?[e[k]]:[])){
+    const x=m.get(v)||{n:0,last:"",rates:new Set()};x.n++;if(e.date>x.last)x.last=e.date;x.rates.add(e.rate);m.set(v,x);
+  }
+  return m;
+}
+const droppedOf=k=>new Set((state.dropped||{})[k]||[]);
+/* choices: most used first, then most recent; for machines, the ones played on the same item (1パチ, 20スロ...) come first */
 const used=(k,rate)=>{
-  const seen=new Map(),recent=[...state.entries].sort((a,b)=>b.date.localeCompare(a.date)||b.t-a.t);
-  for(const pass of [true,false])for(const e of recent)if(e[k]&&!seen.has(e[k])&&(!pass||(k==="machine"&&e.rate===rate)))seen.set(e[k],1);
-  return [...seen.keys()];
+  const st=nameStats(k),drop=droppedOf(k),same=v=>k==="machine"&&rate&&st.get(v).rates.has(rate)?1:0;
+  return [...st.keys()].filter(v=>!drop.has(v)).sort((a,b)=>same(b)-same(a)||st.get(b).n-st.get(a).n||st.get(b).last.localeCompare(st.get(a).last));
 };
 /* while typing, only the names that contain what has been typed */
 function renderChips(){
@@ -773,15 +843,17 @@ function renderChips(){
     for(const v of list.slice(0,6)){const c=el("button",null,v);c.onmousedown=ev=>ev.preventDefault();c.onclick=()=>{$(k).value=v;saveTag(k);$(k).blur()};box.append(c)}
   }
 }
+const undrop=(k,v)=>{const d=state.dropped||(state.dropped={});if((d[k]||[]).includes(v))d[k]=d[k].filter(x=>x!==v)};
 async function saveTag(k){
   const e=findEntry(cur);if(!e)return;
   const v=$(k).value.trim().slice(0,30);if((e[k]||"")===v)return;
+  if(v)undrop(k,v);
   if(v)e[k]=v;else delete e[k];touch(e);renderChips();
   $("tagState").textContent=await persist()?"保存しました":"保存できませんでした";
 }
 for(const k of ["shop","machine"]){$(k).addEventListener("input",renderChips);$(k).addEventListener("change",()=>saveTag(k));$(k).addEventListener("focus",()=>document.body.classList.add("kb"));$(k).addEventListener("blur",()=>{document.body.classList.remove("kb");saveTag(k);renderChips()})}
 /* user-made tags: attached ones first (tap to remove), then every other tag already made (tap to add) */
-const allTags=()=>{const seen=new Map();for(const e of [...state.entries].sort((a,b)=>b.date.localeCompare(a.date)||b.t-a.t))for(const x of e.tags||[])if(!seen.has(x))seen.set(x,1);return [...seen.keys()]};
+const allTags=()=>used("tags");
 function renderTags(){
   const e=findEntry(cur);if(!e)return;
   const mine=e.tags||[],box=$("myTags");box.innerHTML="";
@@ -795,7 +867,7 @@ async function setTags(list){
   $("tagsState").textContent=await persist()?"保存しました":"保存できませんでした";
 }
 $("newTag").oninput=()=>{$("addTag").disabled=!$("newTag").value.trim()};
-const addNewTag=()=>{const v=$("newTag").value.replace(/[、,]/g," ").trim().replace(/^#/,"").slice(0,12);if(!v)return;const e=findEntry(cur);if(!e)return;
+const addNewTag=()=>{undrop("tags",$("newTag").value.replace(/[、,]/g," ").trim().replace(/^#/,"").slice(0,12));const v=$("newTag").value.replace(/[、,]/g," ").trim().replace(/^#/,"").slice(0,12);if(!v)return;const e=findEntry(cur);if(!e)return;
   const mine=e.tags||[];$("newTag").value="";$("addTag").disabled=true;if(!mine.includes(v))setTags(mine.concat(v))};
 $("addTag").onclick=addNewTag;
 $("newTag").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();addNewTag()}});
@@ -854,7 +926,10 @@ $("nOk").onclick=async()=>{
     if(k==="tags"){if((e.tags||[]).includes(v)){e.tags=[...new Set(e.tags.map(x=>x===v?to:x))];touch(e)}}
     else if(e[k]===v){e[k]=to;touch(e)}
   }
-  $("dlgName").classList.remove("on");renaming=null;render();
+  undrop(k,to);
+  if(k==="tags")pro.tags=[...new Set(pro.tags.map(x=>x===v?to:x))];else if(pro[k]===v)pro[k]=to;
+  savePro();renderPro();
+  $("dlgName").classList.remove("on");renaming=null;render();if(picking)renderPick();
   toast((await persist())?(merge?"まとめました":"名前を変えました"):"保存できませんでした");
 };
 $("openShop").onclick=()=>{groupKind="shop";renderG();show("sheetG")};
@@ -1045,7 +1120,7 @@ $("csvFile").onchange=async ev=>{
   if(cD<0||cR<0||cI<0||cO<0){toast("日付・項目・投資・回収の列が必要です");return}
   const have=new Map();
   for(const e of state.entries){const k=e.date+"|"+rateOf(e.rate).name+"|"+e.inv+"|"+e.ret;have.set(k,(have.get(k)||0)+1)}
-  const byName=new Map(BASE.concat(state.custom).map(r=>[r.name,r]));
+  const byName=new Map(rateDefs().map(r=>[r.name,r]));
   let added=0,dup=0,bad=0,newRates=0;const now=Date.now();
   for(let i=1;i<rows.length;i++){
     const r=rows[i],date=normDate(r[cD]||""),name=unguard((r[cR]||"").trim()).slice(0,10);
@@ -1096,7 +1171,7 @@ function persist(){
   })();
   return writing;
 }
-function norm(s){s=s||{};return {entries:(Array.isArray(s)?s:(s.entries||[])).map(normEntry),custom:s.custom||[],order:s.order||[],deleted:s.deleted||[],hidden:s.hidden||[]}}
+function norm(s){s=s||{};return {entries:(Array.isArray(s)?s:(s.entries||[])).map(normEntry),custom:s.custom||[],order:s.order||[],deleted:s.deleted||[],hidden:s.hidden||[],dropped:s.dropped||{},renamed:s.renamed||{}}}
 const localStore={
   load(){try{return norm(JSON.parse(localStorage.getItem("pachi-shushi")||"null"))}catch(e){return norm()}},
   save(d){try{localStorage.setItem("pachi-shushi",JSON.stringify(d))}catch(e){}}
@@ -1116,25 +1191,70 @@ function renderPro(){
   put("pShop",pro.shop);put("pMachine",pro.machine);put("pTags",pro.tags.map(x=>"#"+x).join(" "));
 }
 let picking=null;
-function openPick(k){picking=k;$("pT").textContent=k==="shop"?"店":k==="machine"?"機種":"タグ（いくつでも）";
-  $("pNew").value="";$("pAdd").disabled=true;$("pNew").placeholder=k==="tags"?"新しいタグ":"新しい"+(k==="shop"?"店":"機種")+"の名前";
+function openPick(k){picking=k;$("pick").classList.remove("editing");$("pEdit").textContent="編集";$("pT").textContent=k==="shop"?"店":k==="machine"?"機種":"タグ（いくつでも）";
+  $("pNew").value="";$("pNew").placeholder=k==="tags"?"タグを探す・追加":(k==="shop"?"店名":"機種名")+"で探す・追加";
   renderPick();$("pick").classList.add("on");$("pick").setAttribute("aria-hidden","false")}
 function closePick(){$("pick").classList.remove("on");$("pick").setAttribute("aria-hidden","true");picking=null;renderPro()}
 function renderPick(){
   const k=picking,box=$("pList");box.innerHTML="";
-  const names=k==="tags"?allTags():used(k,sel);
+  const editing=$("pick").classList.contains("editing"),st=nameStats(k);
+  const q=editing?"":$("pNew").value.trim().replace(/^#/,"").toLowerCase();
+  const names=used(k,sel).filter(v=>!q||v.toLowerCase().includes(q));
   const chosen=v=>k==="tags"?pro.tags.includes(v):pro[k]===v;
-  if(k!=="tags"){const n=el("button","none","選ばない");n.setAttribute("aria-pressed",String(!pro[k]));n.onclick=()=>{pro[k]="";savePro();closePick()};box.append(n)}
-  for(const v of names){const b=el("button",null,k==="tags"?"#"+v:v);b.setAttribute("aria-pressed",String(chosen(v)));
-    b.onclick=()=>{if(k==="tags"){pro.tags=chosen(v)?pro.tags.filter(x=>x!==v):pro.tags.concat(v);savePro();renderPick()}else{pro[k]=v;savePro();closePick()}};box.append(b)}
-  if(!names.length)box.append(el("div","pempty","まだありません。上で名前を入れて追加してください"));
+  if(k!=="tags"&&!q){const n=el("button","none","選ばない");n.setAttribute("aria-pressed",String(!pro[k]));n.onclick=()=>{pro[k]="";savePro();closePick()};box.append(n)}
+  /* what was typed is not a choice yet: offer to add it, first in the list */
+  const typed=$("pNew").value.trim().replace(/^#/,"");
+  if(!editing&&typed&&!used(k,sel).some(v=>v.toLowerCase()===typed.toLowerCase())){
+    var addChip=el("button","addnew","＋「"+(k==="tags"?"#":"")+typed+"」を追加");addChip.onclick=pickAdd;
+  }
+  for(const v of names){
+    const b=el("button");b.setAttribute("aria-pressed",String(chosen(v)));
+    b.append(el("span","x","×"),document.createTextNode(k==="tags"?"#"+v:v),el("small",null,(st.get(v)||{n:0}).n+"件"));
+    b.onclick=()=>{
+      if($("pick").classList.contains("editing")){askDrop(k,v);return}
+      if(k==="tags"){pro.tags=chosen(v)?pro.tags.filter(x=>x!==v):pro.tags.concat(v);savePro();renderPick()}else{pro[k]=v;savePro();closePick()}
+    };
+    box.append(b);
+  }
+  if(typeof addChip!=="undefined")box.append(addChip);   // after the matches: a partial name usually means an existing one
+  if(!names.length&&!typed)box.append(el("div","pempty",editing?"消せる候補はありません":"まだありません。上に名前を入れると追加できます"));
 }
-$("pNew").oninput=()=>{$("pAdd").disabled=!$("pNew").value.trim()};
+$("pNew").oninput=()=>renderPick();
+$("pEdit").onclick=()=>{const on=$("pick").classList.toggle("editing");$("pEdit").textContent=on?"戻る":"編集";renderPick()};
+/* remove a name from the choices; if records use it, ask whether to clear it from them too */
+let dropping=null;
+const kindWord=k=>k==="shop"?"店":k==="machine"?"機種":"タグ";
+function askDrop(k,v){
+  const n=(nameStats(k).get(v)||{n:0}).n;
+  dropping={k,v};
+  $("dropT").textContent="「"+(k==="tags"?"#":"")+v+"」";
+  $("dropP").textContent=n?"この"+kindWord(k)+"が付いた記録が "+n+"件 あります。":"この"+kindWord(k)+"が付いた記録はありません。";
+  $("dropRenS").textContent=n?n+"件の記録もまとめて新しい名前になります。同じ名前があれば1つにまとまります":"同じ名前があれば1つにまとまります";
+  $("dropAll").hidden=!n;
+  $("dropAllS").textContent=n+"件の記録から"+(k==="tags"?"このタグを外します":"この"+kindWord(k)+"を外し、未設定に戻します")+"。元に戻せません";
+  $("dlgDrop").classList.add("on");
+}
+async function dropName(k,v,fromRecords){
+  if(fromRecords){
+    for(const e of state.entries){
+      if(k==="tags"){if((e.tags||[]).includes(v)){e.tags=e.tags.filter(x=>x!==v);if(!e.tags.length)delete e.tags;touch(e)}}
+      else if(e[k]===v){delete e[k];touch(e)}
+    }
+  }else{const d=state.dropped||(state.dropped={});d[k]=[...new Set((d[k]||[]).concat(v))]}
+  if(k==="tags")pro.tags=pro.tags.filter(x=>x!==v);else if(pro[k]===v)pro[k]="";
+  savePro();renderPick();render();
+  toast((await persist())?(fromRecords?"記録からも消しました":"候補から外しました"):"保存できませんでした");
+}
+$("dropOnly").onclick=()=>{const {k,v}=dropping;$("dlgDrop").classList.remove("on");dropName(k,v,false)};
+$("dropAll").onclick=()=>{const {k,v}=dropping;$("dlgDrop").classList.remove("on");dropName(k,v,true)};
+$("dropNo").onclick=()=>$("dlgDrop").classList.remove("on");
+$("dropRename").onclick=()=>{const {k,v}=dropping;$("dlgDrop").classList.remove("on");openRename(k,v)};
 const pickAdd=()=>{const k=picking;let v=$("pNew").value.trim();
   v=k==="tags"?v.replace(/[、,]/g," ").replace(/^#/,"").trim().slice(0,12):v.slice(0,30);if(!v)return;
-  $("pNew").value="";$("pAdd").disabled=true;
+  undrop(k,v);
+  $("pNew").value="";
   if(k==="tags"){if(!pro.tags.includes(v))pro.tags=pro.tags.concat(v);savePro();renderPick()}else{pro[k]=v;savePro();closePick()}};
-$("pAdd").onclick=pickAdd;$("pNew").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();pickAdd()}});
+$("pNew").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();pickAdd()}});
 $("pDone").onclick=closePick;$("pick").addEventListener("click",ev=>{if(ev.target===$("pick"))closePick()});
 $("pShop").onclick=()=>openPick("shop");$("pMachine").onclick=()=>openPick("machine");$("pTags").onclick=()=>openPick("tags");
 setTimeout(renderPro);
@@ -1164,12 +1284,14 @@ buildRates();render();
       custom:remote.custom.concat(state.custom.filter(c=>!seenC.has(c.id))),
       order:remote.order.length?remote.order:state.order,
       deleted:[...del].slice(-500),
-      hidden:snap.exists&&Array.isArray(snap.data().hidden)?remote.hidden:state.hidden
+      hidden:snap.exists&&Array.isArray(snap.data().hidden)?remote.hidden:state.hidden,
+      dropped:snap.exists&&snap.data().dropped?remote.dropped:state.dropped,
+      renamed:snap.exists&&snap.data().renamed?remote.renamed:state.renamed
     };
-    store={remote:d=>ref.set({entries:d.entries,custom:d.custom,order:d.order,deleted:d.deleted||[],hidden:d.hidden||[]}),
+    store={remote:d=>ref.set({entries:d.entries,custom:d.custom,order:d.order,deleted:d.deleted||[],hidden:d.hidden||[],dropped:d.dropped||{},renamed:d.renamed||{}}),
       check:async t=>{const sn=await ref.get();const es=sn.exists?(sn.data().entries||[]):[];const x=es.find(e=>e.t===t);return x?(x.memo||""):null}};
     const changed=JSON.stringify(merged)!==JSON.stringify(remote);
-    state.entries=merged.entries;state.custom=merged.custom;state.order=merged.order;state.deleted=merged.deleted;state.hidden=merged.hidden;
+    state.entries=merged.entries;state.custom=merged.custom;state.order=merged.order;state.deleted=merged.deleted;state.hidden=merged.hidden;state.dropped=merged.dropped;state.renamed=merged.renamed;
     ready=true;
     if(changed)await persist();
     buildRates();render();
