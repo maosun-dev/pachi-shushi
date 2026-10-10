@@ -299,8 +299,10 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .dlg .stack{display:grid;gap:8px;margin-top:18px}
 .dlg .stack .btn{margin-top:0;text-align:left;padding:12px 14px;line-height:1.4}
 .dlg .stack .btn small{display:block;font-size:12px;font-weight:400;opacity:.75;margin-top:2px;letter-spacing:0}
-.dlg .stack .danger2{border:1px solid var(--minus);background:var(--bg);color:var(--minus)}
-.dlg .stack .ghost{text-align:center}
+.dlg .stack .danger2{background:var(--bg);color:var(--minus)}
+.dlg .stack .btn[aria-pressed="true"]{border:2px solid var(--ink);padding:11px 13px}
+.dlg .stack .danger2[aria-pressed="true"]{border-color:var(--minus)}
+.dlg .acts .go.danger{border-color:var(--minus);background:var(--minus);color:#fff}
 .pick .plist button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .pick .plist .none{color:var(--sub);border-style:dashed}
 .pick .pnew{display:flex;gap:8px;margin-bottom:12px}
@@ -459,9 +461,9 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
   <div class="stack">
     <button class="btn ghost2" id="dropRename"><span>名前を変える</span><small id="dropRenS"></small></button>
     <button class="btn ghost2" id="dropOnly"><span>候補から外す</span><small>記録はそのまま。選ぶ一覧に出なくなるだけです</small></button>
-    <button class="btn danger2" id="dropAll"><span>記録からも消す</span><small id="dropAllS"></small></button>
-    <button class="btn ghost" id="dropNo">やめる</button>
+    <button class="btn ghost2 danger2" id="dropAll"><span>記録からも消す</span><small id="dropAllS"></small></button>
   </div>
+  <div class="acts"><button class="btn ghost" id="dropNo">やめる</button><button class="btn add go" id="dropGo" disabled>決定</button></div>
 </div></div>
 
 <div class="dlg" id="dlgAsk" role="alertdialog" aria-modal="true" aria-labelledby="askT"><div class="box">
@@ -1232,6 +1234,7 @@ function askDrop(k,v){
   $("dropRenS").textContent=n?n+"件の記録もまとめて新しい名前になります。同じ名前があれば1つにまとまります":"同じ名前があれば1つにまとまります";
   $("dropAll").hidden=!n;
   $("dropAllS").textContent=n+"件の記録から"+(k==="tags"?"このタグを外します":"この"+kindWord(k)+"を外し、未設定に戻します")+"。元に戻せません";
+  pickDrop(null);
   $("dlgDrop").classList.add("on");
 }
 async function dropName(k,v,fromRecords){
@@ -1245,10 +1248,22 @@ async function dropName(k,v,fromRecords){
   savePro();renderPick();render();
   toast((await persist())?(fromRecords?"記録からも消しました":"候補から外しました"):"保存できませんでした");
 }
-$("dropOnly").onclick=()=>{const {k,v}=dropping;$("dlgDrop").classList.remove("on");dropName(k,v,false)};
-$("dropAll").onclick=()=>{const {k,v}=dropping;$("dlgDrop").classList.remove("on");dropName(k,v,true)};
+let dropChoice=null;
+function pickDrop(c){
+  dropChoice=c;
+  for(const [id,v] of [["dropRename","rename"],["dropOnly","only"],["dropAll","all"]])$(id).setAttribute("aria-pressed",String(c===v));
+  const go=$("dropGo");go.disabled=!c;go.classList.toggle("danger",c==="all");
+  go.textContent=c==="rename"?"名前を変える":c==="all"?"消す":"決定";
+}
+$("dropRename").onclick=()=>pickDrop("rename");
+$("dropOnly").onclick=()=>pickDrop("only");
+$("dropAll").onclick=()=>pickDrop("all");
 $("dropNo").onclick=()=>$("dlgDrop").classList.remove("on");
-$("dropRename").onclick=()=>{const {k,v}=dropping;$("dlgDrop").classList.remove("on");openRename(k,v)};
+$("dropGo").onclick=()=>{
+  if(!dropChoice)return;
+  const {k,v}=dropping,c=dropChoice;$("dlgDrop").classList.remove("on");
+  if(c==="rename")openRename(k,v);else dropName(k,v,c==="all");
+};
 const pickAdd=()=>{const k=picking;let v=$("pNew").value.trim();
   v=k==="tags"?v.replace(/[、,]/g," ").replace(/^#/,"").trim().slice(0,12):v.slice(0,30);if(!v)return;
   undrop(k,v);
