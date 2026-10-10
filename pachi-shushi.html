@@ -288,7 +288,7 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .pick.editing .pedit{color:var(--ink);font-weight:700}
 .pick .pnote{display:none;font-size:12px;color:var(--sub);margin:-4px 0 10px}
 .pick.editing .pnote{display:block}
-.pick.editing .pnew,.pick.editing .plist .none{display:none}
+.pick.editing .plist .none{display:none}
 .pick.editing .plist button{border-style:dashed;padding-left:10px}
 .pick.editing .plist button[aria-pressed="true"]{background:var(--bg);color:var(--ink);border-color:var(--line)}
 .pick .plist .x{display:none;color:var(--minus);font-weight:700;margin-right:6px}
@@ -1200,7 +1200,7 @@ function closePick(){$("pick").classList.remove("on");$("pick").setAttribute("ar
 function renderPick(){
   const k=picking,box=$("pList");box.innerHTML="";
   const editing=$("pick").classList.contains("editing"),st=nameStats(k);
-  const q=editing?"":$("pNew").value.trim().replace(/^#/,"").toLowerCase();
+  const q=$("pNew").value.trim().replace(/^#/,"").toLowerCase();   // 編集中も打って探せる
   const names=used(k,sel).filter(v=>!q||v.toLowerCase().includes(q));
   const chosen=v=>k==="tags"?pro.tags.includes(v):pro[k]===v;
   if(k!=="tags"&&!q){const n=el("button","none","選ばない");n.setAttribute("aria-pressed",String(!pro[k]));n.onclick=()=>{pro[k]="";savePro();closePick()};box.append(n)}
@@ -1219,10 +1219,13 @@ function renderPick(){
     box.append(b);
   }
   if(typeof addChip!=="undefined")box.append(addChip);   // after the matches: a partial name usually means an existing one
+  if(!names.length&&typed&&editing)box.append(el("div","pempty","「"+typed+"」は見つかりません"));
   if(!names.length&&!typed)box.append(el("div","pempty",editing?"消せる候補はありません":"まだありません。上に名前を入れると追加できます"));
 }
 $("pNew").oninput=()=>renderPick();
-$("pEdit").onclick=()=>{const on=$("pick").classList.toggle("editing");$("pEdit").textContent=on?"戻る":"編集";renderPick()};
+$("pEdit").onclick=()=>{const on=$("pick").classList.toggle("editing");$("pEdit").textContent=on?"戻る":"編集";
+  const k=picking;$("pNew").placeholder=on?"変えたい・消したい名前を探す":k==="tags"?"タグを探す・追加":(k==="shop"?"店名":"機種名")+"で探す・追加";
+  renderPick()};
 /* remove a name from the choices; if records use it, ask whether to clear it from them too */
 let dropping=null;
 const kindWord=k=>k==="shop"?"店":k==="machine"?"機種":"タグ";
