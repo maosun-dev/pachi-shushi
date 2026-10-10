@@ -55,7 +55,7 @@ button{touch-action:manipulation}
 
 :root{--rowh:clamp(52px,calc((100dvh - 470px) / 3.4),72px)}
 .entry{flex-shrink:0;border-top:1px solid var(--line);padding-top:16px}
-.ratebox{height:calc(var(--rowh) * 3 + 16px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.ratebox{height:calc(var(--rowh) * var(--rows,3) + 8px * (var(--rows,3) - 1));overflow-y:auto;-webkit-overflow-scrolling:touch}
 .rates{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:var(--rowh);gap:8px}
 .bottom{flex-shrink:0;padding-top:8px}
 .rate{position:relative;height:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:0 4px;
@@ -218,13 +218,14 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .hero{padding:4px 0 6px}
 .mstat{font-size:12px;color:var(--sub);text-align:center;margin-top:2px;font-variant-numeric:tabular-nums}
 .mstat b{font-weight:700}
-.spark{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;height:56px;margin:16px auto 6px;max-width:300px;position:relative}
+.spark{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;height:40px;margin:12px auto 4px;max-width:300px;position:relative}
 .spark::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
 .spark i{position:relative;display:block}
 .spark i span{position:absolute;left:0;right:0;border-radius:2px}
 .spark i.p span{bottom:50%;background:var(--plus)}
 .spark i.n span{top:50%;background:var(--minus)}
 .hint{margin-top:8px}
+@media (max-height:620px){.spark{display:none}}
 
 /* amounts: grouped digits, the same Mincho numerals as the total */
 .fields{grid-template-columns:1fr 1fr auto;align-items:end}
@@ -438,6 +439,7 @@ function buildRates(){
     });
     g.appendChild(b);
   }
+  $("ratebox").style.setProperty("--rows",Math.min(3,Math.max(1,Math.ceil(g.children.length/3))));
 }
 /* tap-to-swap reorder (edit mode) */
 let picked=null;

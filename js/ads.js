@@ -1,5 +1,6 @@
 /* ---------- 広告（iPhoneアプリ版だけ。Web版では読み込まれない） ----------
  * 画面の下の「広告」枠のところに AdMob のバナーを出す。
+ * ・320x50 の決まった大きさのバナー（画面幅に合わせる種類は、広告の上下に黒い帯が出たのでやめた）
  * ・バナーの高さに合わせて --adh（広告枠の高さ）を変える。画面の並びは --adh を使っているので崩れない
  * ・キーボードが出ているとき（body.kb）と、画像・動画を大きく見ているとき（#viewer.on）はバナーを隠す
  * ・画像・動画の添付が終わったあと、何回かに1回だけ全画面広告（インタースティシャル）を出す。
@@ -42,7 +43,7 @@ async function update() {
     if (!want) { if (created) await AdMob.hideBanner(); return; }
     if (created) await AdMob.resumeBanner();
     else {
-      await AdMob.showBanner({ adId: ids.banner, adSize: 'ADAPTIVE_BANNER', position: 'BOTTOM_CENTER', margin: 0, isTesting: !production });
+      await AdMob.showBanner({ adId: ids.banner, adSize: 'BANNER', position: 'BOTTOM_CENTER', margin: 0, isTesting: !production });
       created = true;
     }
     if (blocked()) update();
