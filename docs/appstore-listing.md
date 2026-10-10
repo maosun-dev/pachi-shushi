@@ -69,7 +69,10 @@ App Store Connect の「App 情報」「バージョン情報」に貼り付け�
 | 価格 | 無料 |
 | 配信する国・地域 | 日本のみ（EU に出す場合は「トレーダー」情報の登録が必要になるため） |
 
-## スクリーンショット（iPhone 6.9インチ：1320×2868）
+## スクリーンショット
+
+- 6.3インチ（1206×2622）：`docs/screenshots/6.3/`（App Store Connect の最初の枠「Dynamic Island搭載iPhone（中型）」はこちら）
+- 6.9インチ（1320×2868）：`docs/screenshots/`
 
 `docs/screenshots/` の4枚をこの順に。
 
