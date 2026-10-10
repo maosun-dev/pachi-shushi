@@ -187,7 +187,7 @@ button.row:disabled{cursor:default}
 button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
-/* ===== redesign mockup ===== */
+/* ===== main screen and record details ===== */
 /* year detail: three ways to break the year down */
 .views{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:2px 0 12px}
 .views .monthbtn{margin:0;padding:8px 0;width:100%}
@@ -246,6 +246,58 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 @keyframes bump{40%{transform:scale(1.04)}}
 @media (prefers-reduced-motion:reduce){.total.bump{animation:none}}
 
+
+/* ===== store / machine / tags row (always there, quiet until used) ===== */
+.pro{display:flex;gap:6px;margin:2px 0 12px}
+.pro button{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:6px;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:10px;
+  background:var(--bg);color:var(--ink);font:500 13px "Noto Sans JP",sans-serif;cursor:pointer;text-align:left}
+.pro button small{flex:none;color:var(--sub);font-size:11px}
+.pro button span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pro button.unset{border-style:dashed}
+.pro button.unset small{font-size:13px}
+.pro button.unset span{display:none}
+/* the "recorded" notice, with a way straight to the new record */
+.snack{position:fixed;left:50%;bottom:calc(var(--adh) + 16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;z-index:70;
+  display:flex;align-items:center;gap:14px;background:var(--ink);color:var(--bg);padding:8px 8px 8px 16px;border-radius:10px;font-size:14px;
+  white-space:nowrap;pointer-events:none;transition:.25s}
+.snack.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.snack button{border:0;border-radius:7px;background:var(--bg);color:var(--ink);font:700 13px "Noto Sans JP",sans-serif;padding:8px 12px;cursor:pointer}
+.pro button.set{border-color:var(--ink)}
+.pro button.set small{display:none}
+.pro #pShop,.pro #pMachine{flex-grow:1.25}
+.pro button{justify-content:center}
+.pro button.set{justify-content:flex-start}
+/* picker: a sheet from the bottom */
+.pick{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,0);visibility:hidden;
+  transition:background .25s,visibility 0s linear .25s}
+.pick.on{background:rgba(0,0,0,.4);visibility:visible;transition:background .25s,visibility 0s}
+.pick .pbox{background:var(--bg);border-radius:16px 16px 0 0;padding:14px 20px calc(18px + env(safe-area-inset-bottom,0px));max-height:72%;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.pick.on .pbox{transform:none}
+.pick .phead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.pick h3{margin:0;font-size:16px}
+.pick .pdone{background:none;border:0;color:var(--ink);font:700 15px "Noto Sans JP",sans-serif;cursor:pointer;padding:6px 0}
+.pick .plist{overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding:2px 0 4px}
+.pick .plist button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:18px;padding:8px 14px;font:400 14px "Noto Sans JP",sans-serif;cursor:pointer}
+.pick .plist button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.pick .plist .none{color:var(--sub);border-style:dashed}
+.pick .pnew{display:flex;gap:8px;margin-bottom:12px}
+.pick .pnew input{flex:1;font-size:16px}
+.pick .pnew button{flex:none;border:1px solid var(--ink);background:var(--bg);color:var(--ink);border-radius:15px;padding:5px 14px;font:500 13px "Noto Sans JP",sans-serif;cursor:pointer}
+.pick .pnew button:disabled{opacity:.3}
+.pick .pempty{font-size:13px;color:var(--sub);padding:6px 0}
+
+/* ===== screen transitions like iPhone apps ===== */
+.app{transition:transform .34s cubic-bezier(.2,.8,.2,1),filter .34s}
+.sheet{box-shadow:-10px 0 30px rgba(0,0,0,.10);transition:transform .34s cubic-bezier(.2,.8,.2,1),filter .34s,visibility 0s linear .34s}
+.sheet.on{transition:transform .34s cubic-bezier(.2,.8,.2,1),filter .34s,visibility 0s}
+.app.under,.sheet.on.under{transform:translateX(-24%);filter:brightness(.9)}
+.app.dragging,.sheet.dragging{transition:none!important}
+@media (prefers-reduced-motion:reduce){
+  .sheet{transform:none;opacity:0;transition:opacity .2s,visibility 0s linear .2s!important}
+  .sheet.on{opacity:1;transition:opacity .2s!important}
+  .app.under,.sheet.on.under{transform:none;filter:none}
+}
 </style>
 </head>
 <body>
@@ -272,6 +324,11 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
     </div>
     <button class="addlink" id="addLink">＋ 項目を追加</button>
     <div class="bottom">
+    <div class="pro" id="pro">
+      <button id="pShop"><small>店</small><span></span></button>
+      <button id="pMachine"><small>機種</small><span></span></button>
+      <button id="pTags"><small>タグ</small><span></span></button>
+    </div>
     <div class="fields">
       <div><label for="inv">投資</label><input id="inv" inputmode="numeric" placeholder="0"></div>
       <div><label for="ret">回収</label><input id="ret" inputmode="numeric" placeholder="0"></div>
@@ -377,6 +434,13 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
   <div class="acts"><button class="btn ghost" id="askNo">やめる</button><button class="btn danger" id="askYes">削除する</button></div>
 </div></div>
 
+<div class="pick" id="pick" aria-hidden="true"><div class="pbox" role="dialog" aria-modal="true" aria-labelledby="pT">
+  <div class="phead"><h3 id="pT"></h3><button class="pdone" id="pDone">完了</button></div>
+  <div class="pnew"><input id="pNew" autocomplete="off" enterkeyhint="done"><button id="pAdd" disabled>追加</button></div>
+  <div class="plist" id="pList"></div>
+</div></div>
+
+<div class="snack" id="snack" role="status"><span id="snackT"></span><button id="snackB">メモ・画像を付ける</button></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -509,9 +573,10 @@ $("date").value=today();syncDate();
 $("add").onclick=()=>{
   if(editing)setEditing(false);
   const e={t:Date.now(),rate:sel,inv:num($("inv").value),ret:num($("ret").value),date:$("date").value||today()};
+  if(pro.shop)e.shop=pro.shop;if(pro.machine)e.machine=pro.machine;if(pro.tags.length)e.tags=[...pro.tags];
   state.entries.push(e);persist();
   $("inv").value="";$("ret").value="";updateBtn();render();
-  toast("記録しました　"+yen(e.ret-e.inv));
+  snack("記録しました　"+yen(e.ret-e.inv),e.t);
 };
 
 /* render */
@@ -548,8 +613,36 @@ $("nextY").onclick=()=>{year++;render()};
 
 /* sheets */
 const isOn=id=>$(id).classList.contains("on");
-function show(id){const s=$(id);s.classList.add("on");s.setAttribute("aria-hidden","false");s.scrollTop=0}
-function hide(id){const s=$(id);s.classList.remove("on");s.setAttribute("aria-hidden","true")}
+function show(id){const s=$(id);s.classList.add("on");s.setAttribute("aria-hidden","false");s.scrollTop=0;layers()}
+function hide(id){const s=$(id);s.classList.remove("on");s.setAttribute("aria-hidden","true");layers()}
+const SHEETS=["sheetA","sheetM","sheetG","sheetL","sheetD"];
+const openSheets=()=>SHEETS.filter(id=>$(id).classList.contains("on"));
+function layers(){
+  const stack=[document.querySelector(".app"),...openSheets().map($)];
+  stack.forEach((el,i)=>el.classList.toggle("under",i<stack.length-1));
+}
+/* swipe from the left edge: the top screen follows the finger, the one underneath slides back in */
+(()=>{
+  let drag=null;
+  const backOf=s=>s.querySelector("[data-close]")||s.querySelector("#closeD");
+  addEventListener("pointerdown",ev=>{
+    const open=openSheets();if(!open.length||ev.clientX>24)return;
+    const top=$(open[open.length-1]),under=open.length>1?$(open[open.length-2]):document.querySelector(".app");
+    drag={top,under,x0:ev.clientX,t0:performance.now(),w:innerWidth,dx:0};top.classList.add("dragging");under.classList.add("dragging");
+  });
+  addEventListener("pointermove",ev=>{
+    if(!drag)return;drag.dx=Math.max(0,ev.clientX-drag.x0);const k=drag.dx/drag.w;
+    drag.top.style.transform="translateX("+drag.dx+"px)";
+    drag.under.style.transform="translateX("+(-24*(1-k))+"%)";drag.under.style.filter="brightness("+(0.9+0.1*k)+")";
+  });
+  const end=()=>{
+    if(!drag)return;const {top,under,dx,w,t0}=drag;drag=null;
+    top.classList.remove("dragging");under.classList.remove("dragging");top.style.transform="";under.style.transform="";under.style.filter="";
+    const fast=dx/(performance.now()-t0)>0.5;
+    if(dx>w*0.33||(fast&&dx>40))backOf(top).click();
+  };
+  addEventListener("pointerup",end);addEventListener("pointercancel",end);
+})();
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>{hide(b.dataset.close);if(b.dataset.close==="sheetA")year=NOW;render()});
 function setSum(l,v,label,amount){if(l)$(l).textContent=label;const x=$(v);x.textContent=yen(amount);x.className="v "+cls(amount)}
 
@@ -1010,6 +1103,41 @@ const localStore={
 };
 store={remote:null};
 state=localStore.load();
+/* the last store / machine / tags, kept between records (you usually stay in one hall all day) */
+let pro={shop:"",machine:"",tags:[]};
+try{pro=Object.assign(pro,JSON.parse(localStorage.getItem("pachi-pro")||"{}"))}catch(e){}
+const savePro=()=>{try{localStorage.setItem("pachi-pro",JSON.stringify(pro))}catch(e){}};
+/* "recorded" notice with a button to the new record (memo, images, videos) */
+let snackT=null,snackFor=null;
+function snack(msg,t){snackFor=t;$("snackT").textContent=msg;$("snack").classList.add("show");clearTimeout(snackT);snackT=setTimeout(()=>$("snack").classList.remove("show"),4500)}
+$("snackB").onclick=()=>{clearTimeout(snackT);$("snack").classList.remove("show");if(findEntry(snackFor))openDetail(snackFor)};
+function renderPro(){
+  const put=(id,v)=>{const b=$(id);b.querySelector("span").textContent=v||"";b.classList.toggle("unset",!v);b.classList.toggle("set",!!v)};
+  put("pShop",pro.shop);put("pMachine",pro.machine);put("pTags",pro.tags.map(x=>"#"+x).join(" "));
+}
+let picking=null;
+function openPick(k){picking=k;$("pT").textContent=k==="shop"?"店":k==="machine"?"機種":"タグ（いくつでも）";
+  $("pNew").value="";$("pAdd").disabled=true;$("pNew").placeholder=k==="tags"?"新しいタグ":"新しい"+(k==="shop"?"店":"機種")+"の名前";
+  renderPick();$("pick").classList.add("on");$("pick").setAttribute("aria-hidden","false")}
+function closePick(){$("pick").classList.remove("on");$("pick").setAttribute("aria-hidden","true");picking=null;renderPro()}
+function renderPick(){
+  const k=picking,box=$("pList");box.innerHTML="";
+  const names=k==="tags"?allTags():used(k,sel);
+  const chosen=v=>k==="tags"?pro.tags.includes(v):pro[k]===v;
+  if(k!=="tags"){const n=el("button","none","選ばない");n.setAttribute("aria-pressed",String(!pro[k]));n.onclick=()=>{pro[k]="";savePro();closePick()};box.append(n)}
+  for(const v of names){const b=el("button",null,k==="tags"?"#"+v:v);b.setAttribute("aria-pressed",String(chosen(v)));
+    b.onclick=()=>{if(k==="tags"){pro.tags=chosen(v)?pro.tags.filter(x=>x!==v):pro.tags.concat(v);savePro();renderPick()}else{pro[k]=v;savePro();closePick()}};box.append(b)}
+  if(!names.length)box.append(el("div","pempty","まだありません。上で名前を入れて追加してください"));
+}
+$("pNew").oninput=()=>{$("pAdd").disabled=!$("pNew").value.trim()};
+const pickAdd=()=>{const k=picking;let v=$("pNew").value.trim();
+  v=k==="tags"?v.replace(/[、,]/g," ").replace(/^#/,"").trim().slice(0,12):v.slice(0,30);if(!v)return;
+  $("pNew").value="";$("pAdd").disabled=true;
+  if(k==="tags"){if(!pro.tags.includes(v))pro.tags=pro.tags.concat(v);savePro();renderPick()}else{pro[k]=v;savePro();closePick()}};
+$("pAdd").onclick=pickAdd;$("pNew").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();pickAdd()}});
+$("pDone").onclick=closePick;$("pick").addEventListener("click",ev=>{if(ev.target===$("pick"))closePick()});
+$("pShop").onclick=()=>openPick("shop");$("pMachine").onclick=()=>openPick("machine");$("pTags").onclick=()=>openPick("tags");
+setTimeout(renderPro);
 buildRates();render();
 
 (async()=>{

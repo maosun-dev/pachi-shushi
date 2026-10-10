@@ -2,7 +2,7 @@
  * 画面の下の「広告」枠のところに AdMob のバナーを出す。
  * ・320x50 の決まった大きさのバナー（画面幅に合わせる種類は、広告の上下に黒い帯が出たのでやめた）
  * ・バナーの高さに合わせて --adh（広告枠の高さ）を変える。画面の並びは --adh を使っているので崩れない
- * ・キーボードが出ているとき（body.kb）と、画像・動画を大きく見ているとき（#viewer.on）はバナーを隠す
+ * ・キーボードが出ているとき（body.kb）、画像・動画を大きく見ているとき（#viewer.on）、店・機種・タグを選んでいるとき（#pick.on）はバナーを隠す
  * ・画像・動画の添付が終わったあと、何回かに1回だけ全画面広告（インタースティシャル）を出す。
  *   何回に1回かは CONFIG_URL の設定ファイルで決める（0なら出さない）。読めないときは DEFAULT_EVERY。
  *   添付ボタンを押した瞬間には出さない（写真の選択が開けなくなるのと、AdMob の規約で操作の途中の広告は禁止のため）
@@ -33,7 +33,7 @@ const setAdHeight = h => html.style.setProperty('--adh', Math.round(h) + 'px');
 html.classList.add('app-ads');   // 灰色の仮の枠を消す（CSS は build-www.mjs が足す）
 
 // キーボードや画像の拡大表示のときは隠す
-const blocked = () => document.body.classList.contains('kb') || !!document.querySelector('#viewer.on');
+const blocked = () => document.body.classList.contains('kb') || !!document.querySelector('#viewer.on, #pick.on');
 
 async function update() {
   const want = !blocked();
@@ -94,6 +94,8 @@ async function init() {
   watch.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   const viewer = document.getElementById('viewer');
   if (viewer) watch.observe(viewer, { attributes: true, attributeFilter: ['class'] });
+  const pick = document.getElementById('pick');   // the store / machine / tag picker comes up from the bottom
+  if (pick) watch.observe(pick, { attributes: true, attributeFilter: ['class'] });
   update();
 }
 init();
