@@ -487,7 +487,7 @@ const BASE=[
   {id:"1p",name:"1パチ",kind:"p"},{id:"2p",name:"2パチ",kind:"p"},{id:"4p",name:"4パチ",kind:"p"},
   {id:"5s",name:"5スロ",kind:"s"},{id:"10s",name:"10スロ",kind:"s"},{id:"20s",name:"20スロ",kind:"s"}
 ];
-let state={entries:[],custom:[],order:[],deleted:[],hidden:[],dropped:{},renamed:{}};
+let state={entries:[],custom:[],order:[],deleted:[],hidden:[],dropped:{},renamed:{},made:{}};
 const NOW=new Date().getFullYear();
 let year=NOW, sel=null, store=null, newKind="p", listFilter=null;
 const allRates=()=>orderedRates();
@@ -831,9 +831,13 @@ function nameStats(k){
 }
 const droppedOf=k=>new Set((state.dropped||{})[k]||[]);
 /* choices: most used first, then most recent; for machines, the ones played on the same item (1パチ, 20スロ...) come first */
+/* 自分で作った名前は、どの記録にも付いていなくても候補に残す */
+const madeOf=k=>(state.made||{})[k]||[];
+const addMade=(k,v)=>{const m=state.made||(state.made={});if(!(m[k]||[]).includes(v))m[k]=(m[k]||[]).concat(v)};
+const unmake=(k,v)=>{const m=state.made||{};if((m[k]||[]).includes(v))m[k]=m[k].filter(x=>x!==v)};
 const used=(k,rate)=>{
-  const st=nameStats(k),drop=droppedOf(k),same=v=>k==="machine"&&rate&&st.get(v).rates.has(rate)?1:0;
-  return [...st.keys()].filter(v=>!drop.has(v)).sort((a,b)=>same(b)-same(a)||st.get(b).n-st.get(a).n||st.get(b).last.localeCompare(st.get(a).last));
+  const st=nameStats(k),drop=droppedOf(k),s=v=>st.get(v)||{n:0,last:"",rates:new Set()},same=v=>k==="machine"&&rate&&s(v).rates.has(rate)?1:0;
+  return [...new Set([...st.keys(),...madeOf(k)])].filter(v=>!drop.has(v)).sort((a,b)=>same(b)-same(a)||s(b).n-s(a).n||s(b).last.localeCompare(s(a).last));
 };
 /* while typing, only the names that contain what has been typed */
 function renderChips(){
@@ -870,7 +874,7 @@ async function setTags(list){
 }
 $("newTag").oninput=()=>{$("addTag").disabled=!$("newTag").value.trim()};
 const addNewTag=()=>{undrop("tags",$("newTag").value.replace(/[、,]/g," ").trim().replace(/^#/,"").slice(0,12));const v=$("newTag").value.replace(/[、,]/g," ").trim().replace(/^#/,"").slice(0,12);if(!v)return;const e=findEntry(cur);if(!e)return;
-  const mine=e.tags||[];$("newTag").value="";$("addTag").disabled=true;if(!mine.includes(v))setTags(mine.concat(v))};
+  addMade("tags",v);const mine=e.tags||[];$("newTag").value="";$("addTag").disabled=true;if(!mine.includes(v))setTags(mine.concat(v));else persist()};
 $("addTag").onclick=addNewTag;
 $("newTag").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();addNewTag()}});
 $("newTag").addEventListener("focus",()=>document.body.classList.add("kb"));$("newTag").addEventListener("blur",()=>document.body.classList.remove("kb"));
@@ -928,7 +932,7 @@ $("nOk").onclick=async()=>{
     if(k==="tags"){if((e.tags||[]).includes(v)){e.tags=[...new Set(e.tags.map(x=>x===v?to:x))];touch(e)}}
     else if(e[k]===v){e[k]=to;touch(e)}
   }
-  undrop(k,to);
+  undrop(k,to);if(madeOf(k).includes(v)){unmake(k,v);addMade(k,to)}
   if(k==="tags")pro.tags=[...new Set(pro.tags.map(x=>x===v?to:x))];else if(pro[k]===v)pro[k]=to;
   savePro();renderPro();
   $("dlgName").classList.remove("on");renaming=null;render();if(picking)renderPick();
@@ -1173,7 +1177,7 @@ function persist(){
   })();
   return writing;
 }
-function norm(s){s=s||{};return {entries:(Array.isArray(s)?s:(s.entries||[])).map(normEntry),custom:s.custom||[],order:s.order||[],deleted:s.deleted||[],hidden:s.hidden||[],dropped:s.dropped||{},renamed:s.renamed||{}}}
+function norm(s){s=s||{};return {entries:(Array.isArray(s)?s:(s.entries||[])).map(normEntry),custom:s.custom||[],order:s.order||[],deleted:s.deleted||[],hidden:s.hidden||[],dropped:s.dropped||{},renamed:s.renamed||{},made:s.made||{}}}
 const localStore={
   load(){try{return norm(JSON.parse(localStorage.getItem("pachi-shushi")||"null"))}catch(e){return norm()}},
   save(d){try{localStorage.setItem("pachi-shushi",JSON.stringify(d))}catch(e){}}
@@ -1249,6 +1253,7 @@ async function dropName(k,v,fromRecords){
       else if(e[k]===v){delete e[k];touch(e)}
     }
   }else{const d=state.dropped||(state.dropped={});d[k]=[...new Set((d[k]||[]).concat(v))]}
+  unmake(k,v);
   if(k==="tags")pro.tags=pro.tags.filter(x=>x!==v);else if(pro[k]===v)pro[k]="";
   savePro();renderPick();render();
   toast((await persist())?(fromRecords?"記録からも消しました":"候補から外しました"):"保存できませんでした");
@@ -1271,7 +1276,7 @@ $("dropGo").onclick=()=>{
 };
 const pickAdd=()=>{const k=picking;let v=$("pNew").value.trim();
   v=k==="tags"?v.replace(/[、,]/g," ").replace(/^#/,"").trim().slice(0,12):v.slice(0,30);if(!v)return;
-  undrop(k,v);
+  undrop(k,v);addMade(k,v);persist();
   $("pNew").value="";
   if(k==="tags"){if(!pro.tags.includes(v))pro.tags=pro.tags.concat(v);savePro();renderPick()}else{pro[k]=v;savePro();closePick()}};
 $("pNew").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();pickAdd()}});
@@ -1306,12 +1311,13 @@ buildRates();render();
       deleted:[...del].slice(-500),
       hidden:snap.exists&&Array.isArray(snap.data().hidden)?remote.hidden:state.hidden,
       dropped:snap.exists&&snap.data().dropped?remote.dropped:state.dropped,
-      renamed:snap.exists&&snap.data().renamed?remote.renamed:state.renamed
+      renamed:snap.exists&&snap.data().renamed?remote.renamed:state.renamed,
+      made:snap.exists&&snap.data().made?remote.made:state.made
     };
-    store={remote:d=>ref.set({entries:d.entries,custom:d.custom,order:d.order,deleted:d.deleted||[],hidden:d.hidden||[],dropped:d.dropped||{},renamed:d.renamed||{}}),
+    store={remote:d=>ref.set({entries:d.entries,custom:d.custom,order:d.order,deleted:d.deleted||[],hidden:d.hidden||[],dropped:d.dropped||{},renamed:d.renamed||{},made:d.made||{}}),
       check:async t=>{const sn=await ref.get();const es=sn.exists?(sn.data().entries||[]):[];const x=es.find(e=>e.t===t);return x?(x.memo||""):null}};
     const changed=JSON.stringify(merged)!==JSON.stringify(remote);
-    state.entries=merged.entries;state.custom=merged.custom;state.order=merged.order;state.deleted=merged.deleted;state.hidden=merged.hidden;state.dropped=merged.dropped;state.renamed=merged.renamed;
+    state.entries=merged.entries;state.custom=merged.custom;state.order=merged.order;state.deleted=merged.deleted;state.hidden=merged.hidden;state.dropped=merged.dropped;state.renamed=merged.renamed;state.made=merged.made;
     ready=true;
     if(changed)await persist();
     buildRates();render();
