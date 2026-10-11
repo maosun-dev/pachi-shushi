@@ -1201,12 +1201,14 @@ function renderPick(){
   const k=picking,box=$("pList");box.innerHTML="";
   const editing=$("pick").classList.contains("editing"),st=nameStats(k);
   const q=$("pNew").value.trim().replace(/^#/,"").toLowerCase();   // 編集中も打って探せる
-  const names=used(k,sel).filter(v=>!q||v.toLowerCase().includes(q));
+  /* 候補＝記録で使った名前＋いま選んでいる名前（追加したばかりで、まだどの記録にも付いていないもの） */
+  const recorded=used(k,sel),pool=(k==="tags"?pro.tags:(pro[k]?[pro[k]]:[])).filter(v=>!recorded.includes(v)).concat(recorded);
+  const names=pool.filter(v=>!q||v.toLowerCase().includes(q));
   const chosen=v=>k==="tags"?pro.tags.includes(v):pro[k]===v;
   if(k!=="tags"&&!q){const n=el("button","none","選ばない");n.setAttribute("aria-pressed",String(!pro[k]));n.onclick=()=>{pro[k]="";savePro();closePick()};box.append(n)}
   /* what was typed is not a choice yet: offer to add it, first in the list */
   const typed=$("pNew").value.trim().replace(/^#/,"");
-  if(!editing&&typed&&!used(k,sel).some(v=>v.toLowerCase()===typed.toLowerCase())){
+  if(!editing&&typed&&!pool.some(v=>v.toLowerCase()===typed.toLowerCase())){
     var addChip=el("button","addnew","＋「"+(k==="tags"?"#":"")+typed+"」を追加");addChip.onclick=pickAdd;
   }
   for(const v of names){
