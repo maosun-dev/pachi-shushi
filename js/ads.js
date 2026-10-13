@@ -48,6 +48,7 @@ async function update() {
     else {
       await AdMob.showBanner({ adId: ids.banner, adSize: 'BANNER', position: 'BOTTOM_CENTER', margin: 0, isTesting: !production });
       created = true;
+      if (noAds) { stopAds(); return; }   // 出している途中で「広告を消す」が買われた
     }
     if (blocked()) update();
   } catch (e) { shown = false; }
@@ -81,7 +82,7 @@ function afterAttach() {
   if (!(interEvery > 0 && n % interEvery === 0) || !interReady || interShowing) return;
   interReady = false; interShowing = true;
   // 「〇件 追加しました」が見えてから出す
-  setTimeout(() => { AdMob.showInterstitial().catch(finishInter); }, 600);
+  setTimeout(() => { if (noAds) { interShowing = false; return; } AdMob.showInterstitial().catch(finishInter); }, 600);
 }
 window.Ads = { afterAttach };
 
@@ -96,7 +97,11 @@ async function init() {
   AdMob.addListener('interstitialAdDismissed', finishInter);
   AdMob.addListener('interstitialAdFailedToShow', finishInter);
   loadInter(); loadConfig();
-  AdMob.addListener('bannerAdSizeChanged', s => { if (s && s.height) { height = s.height; setAdHeight(height); } });
+  AdMob.addListener('bannerAdSizeChanged', s => {
+    // 買ったあとで広告の読み込みが終わってバナーが足された（removeBanner はまだ無いバナーを外せない）
+    if (noAds) { AdMob.removeBanner().catch(() => {}); setAdHeight(0); return; }
+    if (s && s.height) { height = s.height; setAdHeight(height); }
+  });
   const watch = new MutationObserver(update);
   watch.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   const viewer = document.getElementById('viewer');
