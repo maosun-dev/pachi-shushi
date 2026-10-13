@@ -39,7 +39,9 @@
 5. ~~AdMob の「ストアを追加」~~ 済み（2026-10-13）。ただし **app-ads.txt の確認で不合格**（広告配信の制限が解けない）
    - ファイル自体は正しい（https://maosun-dev.com/app-ads.txt に pub-7017663942238206 の行がある）
    - 原因：App Store に載っているサイトが maosun-dev.github.io（サポートURL）で、そこから maosun-dev.com へ別ドメインに転送されるため、AdMob が辿らない。マーケティングURL（＝開発者サイト）も空
-   - 直し方：次のバージョンで App Store Connect の「マーケティングURL」を https://maosun-dev.com/ に（サポートURLも maosun-dev.com に）変える → 公開後に AdMob の「アップデートを確認」。公開中のバージョンのURLは書き換えられないので新バージョンが必要
+   - 直し方：公開中のバージョンのURLは書き換えられないので新バージョンが必要
+   - **2026-10-13 に 1.0.1（ビルド14、中身は 1.0 と同じ）を審査に提出済み**。マーケティングURL https://maosun-dev.com/、サポートURL https://maosun-dev.com/support.html
+   - **次にやる**：1.0.1 が公開されたら、AdMob のアプリ一覧 → ワンタップ収支 → app-ads.txt の「アップデートを確認」を押して、確認が通るか見る
 6. AdMob の「お支払い」に住所・税・口座が登録済みか確認（売上の受け取りに必要。入力はユーザー本人）
 7. EU でも配信するなら App Store Connect でトレーダーステータスを登録。日本だけなら配信国から EU を外す
 8. maosun-dev.github.io のトップの「App Store は準備中」を上のストアのリンクに差し替える
