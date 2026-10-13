@@ -62,8 +62,8 @@ App Store Connect の「App 情報」「バージョン情報」に貼り付け�
 |---|---|
 | カテゴリ（プライマリ） | ファイナンス |
 | カテゴリ（セカンダリ） | ライフスタイル |
-| サポートURL | https://maosun-dev.github.io/support.html |
-| マーケティングURL | （空欄でよい） |
+| サポートURL | https://maosun-dev.com/support.html |
+| マーケティングURL | https://maosun-dev.com/ （空欄にしない。AdMob の app-ads.txt 確認に使われる） |
 | プライバシーポリシーURL | https://maosun-dev.github.io/pachi-shushi/privacy.html |
 | 著作権 | 2026 maosun-dev |
 | 価格 | 無料 |
