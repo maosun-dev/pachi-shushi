@@ -114,3 +114,44 @@ test('uses_product_id：決まった ID で買う', async () => {
   await w.Purchase.buy();
   assert.equal(asked, ID);
 });
+
+test('row_inserted_after_csv：詳細画面の CSV の行の直後にボタンの行が入る', async () => {
+  const w = load(['js/purchase.js']);
+  w.document.fire('DOMContentLoaded');
+  await w.Purchase.ready; await flush();
+  const csv = w.document.querySelector('#sheetA .csvrow');
+  const row = csv.nextElementSibling;
+  assert.equal(row && row.id, 'adfreeRow');
+  assert.equal(row.className, 'csvrow');
+  assert.equal(row.textContent, '広告を消す（¥130）・購入を復元');
+});
+
+test('row_without_price：値段が取れなければ値段なしの文字', async () => {
+  const np = fakeStore({ getProduct: async () => { throw new Error('offline'); } });
+  const w = load(['js/purchase.js'], { np });
+  w.document.fire('DOMContentLoaded');
+  await w.Purchase.ready; await flush();
+  assert.equal(w.document.getElementById('adfreeRow').textContent, '広告を消す・購入を復元');
+});
+
+test('row_shows_owned：買ったあとは「広告なし ✓」だけ', async () => {
+  const w = load(['js/purchase.js']);
+  w.document.fire('DOMContentLoaded');
+  await w.Purchase.ready; await flush();
+  w.document.getElementById('buyNoAds').click();
+  await flush();
+  assert.equal(w.document.getElementById('adfreeRow').textContent, '広告なし ✓');
+});
+
+test('row_disabled_while_busy：処理中はボタンを押せない', async () => {
+  let release;
+  const np = fakeStore({ purchaseProduct: () => new Promise(r => { release = r; }) });
+  const w = load(['js/purchase.js'], { np });
+  w.document.fire('DOMContentLoaded');
+  await w.Purchase.ready; await flush();
+  w.document.getElementById('buyNoAds').click();
+  await flush();
+  assert.equal(w.document.getElementById('buyNoAds').disabled, true);
+  assert.equal(w.document.getElementById('restoreNoAds').disabled, true);
+  release({}); await flush();
+});

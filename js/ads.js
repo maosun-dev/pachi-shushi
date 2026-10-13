@@ -6,6 +6,8 @@
  * ・画像・動画の添付が終わったあと、何回かに1回だけ全画面広告（インタースティシャル）を出す。
  *   何回に1回かは CONFIG_URL の設定ファイルで決める（0なら出さない）。読めないときは DEFAULT_EVERY。
  *   添付ボタンを押した瞬間には出さない（写真の選択が開けなくなるのと、AdMob の規約で操作の途中の広告は禁止のため）
+ * 「広告を消す」を買った人（js/purchase.js の window.Purchase）には、バナーも全画面広告も追跡許可の確認も出さない。
+ *   起動時は Purchase.ready（端末に覚えた値）を待ってから始めるので、買った人に一瞬バナーが出ることもない。
  * 開発中は Google のテスト広告。ストアに出す版だけ本物（ADS_PRODUCTION=1 でビルドしたとき）。
  */
 (() => {
@@ -28,7 +30,7 @@ const COUNT_KEY = 'pachi-attach-count';   // アプリを開き直しても数�
 const AdMob = plugin.AdMob;
 const html = document.documentElement;
 
-let created = false, height = 50, shown = false;
+let created = false, height = 50, shown = false, started = false, noAds = false;
 const setAdHeight = h => html.style.setProperty('--adh', Math.round(h) + 'px');
 html.classList.add('app-ads');   // 灰色の仮の枠を消す（CSS は build-www.mjs が足す）
 
@@ -36,6 +38,7 @@ html.classList.add('app-ads');   // 灰色の仮の枠を消す（CSS は build-
 const blocked = () => document.body.classList.contains('kb') || !!document.querySelector('#viewer.on, #pick.on');
 
 async function update() {
+  if (noAds) return;
   const want = !blocked();
   if (want === shown) return;
   shown = want;
@@ -64,6 +67,7 @@ async function loadConfig() {
 }
 function loadInter() {
   interReady = false;
+  if (noAds) return;
   AdMob.prepareInterstitial({ adId: ids.interstitial, isTesting: !production })
     .then(() => { interReady = true; })
     .catch(() => setTimeout(loadInter, 60000));
@@ -71,6 +75,7 @@ function loadInter() {
 function finishInter() { interShowing = false; loadInter(); }
 
 function afterAttach() {
+  if (noAds) return;
   let n = 0;
   try { n = (parseInt(localStorage.getItem(COUNT_KEY), 10) || 0) + 1; localStorage.setItem(COUNT_KEY, String(n)); } catch (e) {}
   if (!(interEvery > 0 && n % interEvery === 0) || !interReady || interShowing) return;
@@ -81,6 +86,8 @@ function afterAttach() {
 window.Ads = { afterAttach };
 
 async function init() {
+  if (started) return;
+  started = true;
   try {
     const s = await AdMob.trackingAuthorizationStatus();
     if (s.status === 'notDetermined') await AdMob.requestTrackingAuthorization();
@@ -98,5 +105,19 @@ async function init() {
   if (pick) watch.observe(pick, { attributes: true, attributeFilter: ['class'] });
   update();
 }
-init();
+
+/* ---------- 広告を消す（買い切り）とのつながり ---------- */
+async function stopAds() {
+  noAds = true; shown = false; interReady = false;
+  setAdHeight(0);
+  if (created) { created = false; try { await AdMob.removeBanner(); } catch (e) {} }
+}
+const purchase = window.Purchase || null;
+if (purchase) {
+  purchase.onChange(owned => {
+    if (owned) stopAds();
+    else { noAds = false; setAdHeight(height); init(); }   // 払い戻しなどで買っていない状態に戻ったとき
+  });
+  purchase.ready.then(owned => { if (owned) stopAds(); else init(); });
+} else init();
 })();
