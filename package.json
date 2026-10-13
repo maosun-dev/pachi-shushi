@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node tools/app/build-www.mjs",
     "sync": "npm run build && npx cap sync ios",
-    "test": "node --test tests/"
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@capacitor-community/admob": "8.1.0",
