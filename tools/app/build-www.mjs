@@ -5,6 +5,7 @@
 //   - Google Fonts <link> -> css/fonts.css + assets/fonts/ (offline, see tools/offline/fetch-fonts.mjs)
 //   - js/vendor/*: Capacitor and the plugins' browser side (AdMob, Preferences, Filesystem, Share)
 //   - js/app-native.js: a stand-in for window.claude that saves on the phone (records, images/videos, CSV share)
+//   - js/purchase.js: the one-time "remove ads" in-app purchase (@capgo/native-purchases) and its row on the detail sheet
 //   - js/ads-config.js + js/ads.js: the AdMob banner in the ad slot. Real ads only when ADS_PRODUCTION=1
 //     (set by the store build); otherwise Google's test ads.
 // Usage: npm run build                   (test ads)
@@ -32,7 +33,7 @@ rmSync(out, { recursive: true, force: true });
 mkdirSync(join(out, 'js/vendor'), { recursive: true });
 cpSync(join(root, 'css'), join(out, 'css'), { recursive: true });
 cpSync(join(root, 'assets/fonts'), join(out, 'assets/fonts'), { recursive: true });
-for (const f of ['app-native.js', 'ads.js']) copyFileSync(join(root, 'js', f), join(out, 'js', f));
+for (const f of ['app-native.js', 'purchase.js', 'ads.js']) copyFileSync(join(root, 'js', f), join(out, 'js', f));
 
 const vendor = {
   'capacitor.js': '@capacitor/core/dist/capacitor.js',
@@ -40,6 +41,7 @@ const vendor = {
   'preferences.js': '@capacitor/preferences/dist/plugin.js',
   'filesystem.js': '@capacitor/filesystem/dist/plugin.js',
   'share.js': '@capacitor/share/dist/plugin.js',
+  'purchases.js': '@capgo/native-purchases/dist/plugin.js',
 };
 for (const [to, from] of Object.entries(vendor)) copyFileSync(join(root, 'node_modules', from), join(out, 'js/vendor', to));
 // the Filesystem plugin expects its helper under the global name "synapse"
@@ -60,10 +62,11 @@ replaceOnce(/<link rel="preconnect"[^>]*>\s*<link rel="preconnect"[^>]*>\s*<link
 replaceOnce('</style>', '.app-ads .ad .slot{background:none;color:transparent}\n</style>');
 // app scripts, before the page's own script (window.claude must exist when it starts)
 replaceOnce('<script>\nconst BASE=', [
-  'capacitor.js', 'synapse.js', 'admob.js', 'preferences.js', 'filesystem.js', 'share.js',
+  'capacitor.js', 'synapse.js', 'admob.js', 'preferences.js', 'filesystem.js', 'share.js', 'purchases.js',
 ].map(f => `<script src="js/vendor/${f}"></script>`).concat([
   '<script src="js/ads-config.js"></script>',
   '<script src="js/app-native.js"></script>',
+  '<script src="js/purchase.js"></script>',
   '<script src="js/ads.js"></script>',
 ]).join('\n') + '\n<script>\nconst BASE=');
 writeFileSync(join(out, 'index.html'), html);

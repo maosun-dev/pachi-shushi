@@ -5,7 +5,8 @@
   "description": "ワンタップ収支 - パチンコ・パチスロ記録",
   "scripts": {
     "build": "node tools/app/build-www.mjs",
-    "sync": "npm run build && npx cap sync ios"
+    "sync": "npm run build && npx cap sync ios",
+    "test": "node --test tests/"
   },
   "dependencies": {
     "@capacitor-community/admob": "8.1.0",
@@ -13,7 +14,8 @@
     "@capacitor/filesystem": "8.1.4",
     "@capacitor/ios": "8.5.2",
     "@capacitor/preferences": "8.0.1",
-    "@capacitor/share": "8.0.3"
+    "@capacitor/share": "8.0.3",
+    "@capgo/native-purchases": "8.9.5"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.2"
