@@ -36,7 +36,10 @@
 2. ~~本番用アイコン~~ 済み（tools/app/make-icon.py、考え方は tools/app/icon-design.md）
 3. App Store Connect に入力：掲載文・スクリーンショット・年齢制限・Appのプライバシーは docs/appstore-listing.md と docs/screenshots/ を使う
 4. ~~審査に提出~~ 済み。2026-10-11 に 2.1「情報不足」（新しい開発者への追加質問）で一度却下 → 説明文（docs/review-reply-2.1.md、審査メモ欄にも保存）と実機の画面収録を返信し、ビルド12で再提出 → **2026-10-13 に合格し、同日 App Store で公開**：https://apps.apple.com/jp/app/id6820513646
-5. **次にやる（最優先）** AdMob の「ストアを追加」でリンク（しないと広告配信が制限されたまま）
+5. ~~AdMob の「ストアを追加」~~ 済み（2026-10-13）。ただし **app-ads.txt の確認で不合格**（広告配信の制限が解けない）
+   - ファイル自体は正しい（https://maosun-dev.com/app-ads.txt に pub-7017663942238206 の行がある）
+   - 原因：App Store に載っているサイトが maosun-dev.github.io（サポートURL）で、そこから maosun-dev.com へ別ドメインに転送されるため、AdMob が辿らない。マーケティングURL（＝開発者サイト）も空
+   - 直し方：次のバージョンで App Store Connect の「マーケティングURL」を https://maosun-dev.com/ に（サポートURLも maosun-dev.com に）変える → 公開後に AdMob の「アップデートを確認」。公開中のバージョンのURLは書き換えられないので新バージョンが必要
 6. AdMob の「お支払い」に住所・税・口座が登録済みか確認（売上の受け取りに必要。入力はユーザー本人）
 7. EU でも配信するなら App Store Connect でトレーダーステータスを登録。日本だけなら配信国から EU を外す
 8. maosun-dev.github.io のトップの「App Store は準備中」を上のストアのリンクに差し替える
