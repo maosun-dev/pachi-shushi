@@ -67,7 +67,7 @@ App Store Connect の「App 情報」「バージョン情報」に貼り付け�
 | プライバシーポリシーURL | https://maosun-dev.github.io/pachi-shushi/privacy.html |
 | 著作権 | 2026 maosun-dev |
 | 価格 | 無料 |
-| 配信する国・地域 | 日本のみ（EU に出す場合は「トレーダー」情報の登録が必要になるため） |
+| 配信する国・地域 | 日本＋アメリカ（2026-10-18 から。AdMob の app-ads.txt 確認のため。EU に出す場合は「トレーダー」情報の登録が必要） |
 
 ## スクリーンショット
 
